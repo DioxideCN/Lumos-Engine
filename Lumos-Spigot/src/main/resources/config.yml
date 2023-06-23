@@ -1,0 +1,69 @@
+# 配置文件的版本
+version: 1
+# 是否在日志中输出config.yml的加载情况
+config-log: true
+# 一些小功能的设置
+feature:
+  # 是否防止苦力怕爆炸、恶魂火球爆炸破坏地形
+  protect-terrain: true
+  # 是否阻止末影人拿起方块
+  prevented-enderman: true
+  # 是否启用工作台破坏后只掉落1-3个木板
+  crafting-table: true
+  # 是否下调铁傀儡的掉落物为0-3个铁粒
+  iron-golem: true
+  # 铁傀儡能否自然生成，玩家造的不算
+  summon-iron-golem: true
+  # 是否启用更蠢的村民，启用后村民不会繁殖、不会刷新职业、不会刷新交易次数、不会穿过地狱门
+  stupid-villager: true
+  # 是否为盔甲或套装启用模板纹理加强属性
+  trim-upgrade: true
+  # 玩家乘坐矿车时是否允许满速前进
+  minecart-full-speed: true
+# 展示实体设置
+display:
+  item:
+    # 放置物品展示实体时放置的坐标不能和玩家超过多少距离
+    # 小于等于0则不启用这项功能
+    place-radius: 3
+    # 回收物品展示实体时的回收半径
+    # 小于等于0则不允许玩家使用回收功能
+    recycle-radius: 2
+    # 创建物品展示实体是否消耗手持的物品
+    consume: true
+    # 物品展示实体在xyz轴方向上能缩放的范围
+    # 缩放范围为闭区间，即两个边缘都能取到
+    scale:
+      x:
+        min: 0.3
+        max: 2.0
+      y:
+        min: 0.3
+        max: 2.0
+      z:
+        min: 0.3
+        max: 2.0
+  block:
+    # 放置方块展示实体时放置的坐标不能和玩家超过多少距离
+    # 小于等于0则不启用这项功能
+    place-radius: 3
+    # 回收方块展示实体时的回收半径
+    # 小于等于0则不允许玩家使用回收功能
+    recycle-radius: 2
+    # 创建方块展示实体是否消耗手持的方块类型物品
+    consume: true
+    # 方块展示实体在xyz轴方向上能缩放的范围
+    # 缩放范围为闭区间，即两个边缘都能取到
+    scale:
+      x:
+        min: 0.3
+        max: 5.0
+      y:
+        min: 0.3
+        max: 5.0
+      z:
+        min: 0.3
+        max: 5.0
+  book:
+    # 创建成书展示框是否消耗手持的成书
+    consume: true

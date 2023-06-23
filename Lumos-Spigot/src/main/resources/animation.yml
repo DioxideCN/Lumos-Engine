@@ -1,0 +1,3 @@
+# 全局重力加速度，默认9.8
+gravitational-acceleration: 9.8
+# 动画优化原则

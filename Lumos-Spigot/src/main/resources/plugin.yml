@@ -1,0 +1,14 @@
+name: LumosEngine
+main: cn.dioxide.spigot.LumosStarter
+version: '1.0.0'
+api-version: '1.20'
+api: '1.20'
+prefix: 'LumosEngine'
+authors: [ Dioxide_CN ]
+description: 'Create infinite possibilities.'
+commands:
+  display:
+    description: 'Get display help'
+    permission-message: "You don't have permission to use this command."
+    permission: 'lumos.display.use'
+    usage: "/display <module> <...args>"

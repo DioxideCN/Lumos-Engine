@@ -1,0 +1,10 @@
+plugins {
+    id 'java'
+}
+
+group = 'cn.dioxide.common'
+version = '1.0.0'
+
+test {
+    useJUnitPlatform()
+}

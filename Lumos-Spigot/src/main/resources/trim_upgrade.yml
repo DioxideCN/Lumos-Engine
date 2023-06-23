@@ -1,0 +1,247 @@
+upgrade:
+  sentry:
+    # 支持的纹饰
+    trim-material:
+      - emerald
+      - iron
+      - diamond
+      - netherite
+    # 支持的盔甲类型
+    armor-material:
+      - iron
+      - diamond
+      - netherite
+    # 穿戴效果
+    buff:
+      # 1件套效果
+      - count: 1
+        # 持续获得抗性提升药水效果
+        effect: damage_resistance
+        # 药水等级为1
+        effect-level: 1
+        # 药水作用于谁
+        effect-target: self
+  shaper:
+    # 支持所有纹饰
+    trim-material: "*"
+    # 支持所有盔甲类型
+    armor-material: "*"
+    # 穿戴效果
+    buff:
+      # 2件套效果
+      - count: 2
+        # 死亡后原地复活
+        event: respawn_here
+        # 这件事发生的概率为10%
+        event-chance: 0.1
+      # 4件套效果
+      - count: 4
+        # 死亡后原地复活
+        event: respawn_here
+        # 这件事发生的概率为15%
+        event-chance: 0.15
+  vex:
+    trim-material:
+      - emerald
+      - diamond
+      - netherite
+    armor-material:
+      - iron
+      - diamond
+      - netherite
+    buff:
+      - count: 1
+        effect: strength
+        effect-level: 1
+        effect-target: self
+  wild:
+    trim-material:
+      - amethyst
+      - gold
+      - emerald
+    armor-material:
+      - leather
+      - chainmail
+      - iron
+      - golden
+    buff:
+      - count: 1
+        effect: haste
+        effect-level: 1
+        effect-target: self
+  coast:
+    trim-material:
+      - diamond
+      - netherite
+    armor-material:
+      - chainmail
+      - iron
+    buff:
+      - count: 3
+        effect: conduit_power
+        effect-level: 1
+        effect-target: self
+  dune:
+    trim-material:
+      - copper
+      - amethyst
+      - quartz
+      - lapis
+      - redstone
+    armor-material:
+      - leather
+      - iron
+      - golden
+    buff:
+      - count: 1
+        effect: speed
+        effect-level: 1
+        effect-target: self
+  wayfinder:
+    trim-material:
+      - lapis
+      - redstone
+    armor-material:
+      - iron
+      - diamond
+      - netherite
+    buff:
+      - count: 1
+        effect: jump_boost
+        effect-level: 1
+        effect-target: self
+      - count: 2
+        effect: jump_boost
+        effect-level: 2
+        effect-target: self
+  raiser:
+    trim-material:
+      - amethyst
+      - gold
+      - emerald
+      - iron
+      - diamond
+      - netherite
+    armor-material:
+      - iron
+      - golden
+      - diamond
+      - netherite
+    buff:
+      - count: 1
+        effect: luck
+        effect-level: 1
+        effect-target: self
+      - count: 2
+        effect: luck
+        effect-level: 2
+        effect-target: self
+  host:
+    trim-material:
+    armor-material:
+    buff:
+      # 剥削村民
+      - count: 2
+        event: exploit_villagers
+        event-chance: 0.1
+      - count: 4
+        event: exploit_villagers
+        event-chance: 0.2
+  ward:
+    trim-material: "*"
+    armor-material:
+      - leather
+      - chainmail
+      - iron
+      - golden
+    buff:
+      - count: 1
+        effect: glowing
+        effect-level: 1
+        effect-target: self
+  silence:
+    trim-material:
+      - amethyst
+      - redstone
+      - emerald
+      - diamond
+      - netherite
+    armor-material:
+      - iron
+      - golden
+      - diamond
+      - netherite
+    buff:
+      - count: 1
+        effect: night_vision
+        effect-level: 1
+        effect-target: self
+  tide:
+    trim-material:
+      - amethyst
+      - emerald
+      - diamond
+      - netherite
+    armor-material:
+      - diamond
+      - netherite
+    buff:
+      - count: 1
+        effect: water_breathing
+        effect-level: 1
+        effect-target: self
+  snout:
+    trim-material:
+      - gold
+    armor-material:
+      - diamond
+      - netherite
+    buff:
+      # 中立身边的猪灵
+      - count: 1
+        event: neutral_piglin
+        event-chance: 1.0
+  rib:
+    trim-material:
+    armor-material:
+    buff:
+      # 免疫负面药水效果
+      - count: 1
+        effect: fire_resistance
+        effect-level: 1
+        effect-target: self
+  eye:
+    trim-material:
+      - copper
+      - amethyst
+      - lapis
+      - redstone
+    armor-material:
+      - netherite
+    buff:
+      # 可以直视末影人
+      - count: 1
+        event: docile_enderman
+        event-chance: 1.0
+  spire:
+    trim-material:
+      - amethyst
+      - emerald
+      - diamond
+      - netherite
+    armor-material:
+      - netherite
+    buff:
+      # 当effect-target为attacker时必须搭配chance使用
+      - count: 1
+        effect: levitation
+        effect-level: 1
+        effect-target: attacker
+        event-chance: 0.15
+      - count: 2
+        effect: levitation
+        effect-level: 1
+        # 持续时间，单位为秒
+        effect-duration: 5
+        effect-target: attacker
+        event-chance: 0.2

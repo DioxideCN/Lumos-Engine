@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+group = 'cn.dioxide.spigot'
+version = '1.0.0'
+
+dependencies {
+    implementation project(":Lumos-Common")
+}
+
+shadowJar {
+    append("plugin.yml")
+    dependencies {
+        include(project(":Lumos-Common"))
+    }
+    archiveBaseName.set("LumosEngine")
+    archiveVersion.set("${project.version}")
+    archiveClassifier.set('')
+}

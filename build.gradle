@@ -1,0 +1,69 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = "cn.dioxide.app"
+version = "1.0.0"
+
+ext {
+    spigotVersion = "1.20-R0.1-SNAPSHOT"
+    annotationVersion = "23.0.0"
+    lombokVersion = "1.18.28"
+}
+
+// 所有工程配置包括父工程
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+        maven { url 'https://papermc.io/repo/repository/maven-public/' }
+        maven { url 'https://oss.sonatype.org/content/groups/public/' }
+        maven { url 'https://repo.codemc.org/repository/maven-public/' }
+        maven { url 'https://repo.dmulloy2.net/repository/public/' }
+    }
+}
+
+subprojects {
+    // 定义子工程所有依赖
+    dependencies {
+        implementation "org.spigotmc:spigot-api:$spigotVersion"
+        implementation "org.jetbrains:annotations:$annotationVersion"
+        compileOnly "org.projectlombok:lombok:$lombokVersion"
+
+        // 单元测试
+        testImplementation platform("org.junit:junit-bom:5.9.1")
+        testImplementation "org.junit.jupiter:junit-jupiter"
+    }
+
+    shadowJar {
+        //minimize()
+        append("plugin.yml")
+    }
+
+    artifacts {
+        archives shadowJar
+    }
+
+    tasks.test {
+        useJUnitPlatform()
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
