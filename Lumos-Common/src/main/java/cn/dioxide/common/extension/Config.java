@@ -3,6 +3,7 @@ package cn.dioxide.common.extension;
 import cn.dioxide.common.infra.EffectTarget;
 import cn.dioxide.common.infra.EventType;
 import cn.dioxide.common.infra.TrimUpgradeStore;
+import cn.dioxide.common.infra.WhiteList;
 import cn.dioxide.common.util.ConvertUtils;
 import cn.dioxide.common.util.DecimalUtils;
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,13 +26,14 @@ public class Config {
     // The static instance of the config.
     private static Config config;
     // The list of config filenames.
-    private static final String[] filenames = { "config.yml", "trim_upgrade.yml" };
+    private static final String[] filenames = { "config.yml", "trim_upgrade.yml", "whitelist.yml" };
     // The list of files.
     private static File[] files;
     // The list of configs.
     private static YamlConfiguration[] configs;
 
     public final int version;
+    public final WhiteList whiteList;
     public final Feature feature;
     public final Display display;
 
@@ -84,8 +86,12 @@ public class Config {
         this.feature.ironGolem = configs[0].getBoolean("feature.iron-golem", true);
         this.feature.summonIronGolem = configs[0].getBoolean("feature.summon-iron-golem", true);
         this.feature.stupidVillager = configs[0].getBoolean("feature.stupid-villager", true);
-        this.feature.trimUpgrade = configs[0].getBoolean("feature.trim-upgrade", true);
         this.feature.minecartFullSpeed = configs[0].getBoolean("feature.minecart-full-speed", true);
+        this.feature.enableWhitelist = configs[0].getBoolean("feature.enable-whitelist", true);
+
+        this.whiteList = new WhiteList();
+        this.whiteList.kickMessage = configs[2].getString("kick_message", "&c你没有获得白名单,请联系服主获得。");
+        this.whiteList.users = configs[2].getStringList("users");
 
         this.display = new Display();
         this.display.item.placeRadius = configs[0].getInt("display.item.place-radius", 3);
@@ -119,8 +125,8 @@ public class Config {
             Format.use().plugin().finder("Crafting Table", this.feature.craftingTable);
             Format.use().plugin().finder("Iron Golem", this.feature.ironGolem);
             Format.use().plugin().finder("Stupid Villager", this.feature.stupidVillager);
-            Format.use().plugin().finder("Trim Upgrade", this.feature.trimUpgrade);
             Format.use().plugin().finder("Minecart Full Speed", this.feature.minecartFullSpeed);
+            Format.use().plugin().finder("Enable Whitelist", this.feature.enableWhitelist);
             Format.use().plugin().finder("Item Display Place Radius", this.display.item.placeRadius);
             Format.use().plugin().finder("Item Display Recycle Radius", this.display.item.recycleRadius);
             Format.use().plugin().finder("Item Display Consume", this.display.item.consume);
@@ -257,8 +263,8 @@ public class Config {
         FEATURE_KEY_MAP.put("feature.iron-golem", config.feature.ironGolem);
         FEATURE_KEY_MAP.put("feature.summon-iron-golem", config.feature.summonIronGolem);
         FEATURE_KEY_MAP.put("feature.stupid-villager", config.feature.stupidVillager);
-        FEATURE_KEY_MAP.put("feature.trim-upgrade", config.feature.trimUpgrade);
         FEATURE_KEY_MAP.put("feature.minecart-full-speed", config.feature.minecartFullSpeed);
+        FEATURE_KEY_MAP.put("feature.enable-whitelist", config.feature.enableWhitelist);
     }
 
     public static class Feature {
@@ -268,8 +274,8 @@ public class Config {
         public boolean ironGolem;
         public boolean summonIronGolem;
         public boolean stupidVillager;
-        public boolean trimUpgrade;
         public boolean minecartFullSpeed;
+        public boolean enableWhitelist;
     }
 
     public static class Display {
@@ -298,6 +304,21 @@ public class Config {
 
     public static Config get() {
         return config;
+    }
+
+
+    public boolean set(int fileIndex, String configKey, Object value) {
+        if (fileIndex > filenames.length - 1) {
+            return false;
+        }
+        try {
+            configs[fileIndex].set(configKey, value);
+            configs[fileIndex].save(files[fileIndex]);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }

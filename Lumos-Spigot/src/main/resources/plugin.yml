@@ -7,6 +7,9 @@ prefix: 'LumosEngine'
 authors: [ Dioxide_CN ]
 description: 'Create infinite possibilities.'
 commands:
+  lumos:
+    description: 'Get lumos engine total help'
+    usage: "/lumos <module> <...args>"
   display:
     description: 'Get display help'
     permission-message: "You don't have permission to use this command."

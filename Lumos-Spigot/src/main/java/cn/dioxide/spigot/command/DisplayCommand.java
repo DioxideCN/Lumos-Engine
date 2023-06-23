@@ -16,7 +16,9 @@ import java.util.Arrays;
 import java.util.List;
 
 @Executor(name = "display")
-public class MainCommand implements TabExecutor {
+public class DisplayCommand implements TabExecutor {
+
+    @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player)) {
             return false;
@@ -26,7 +28,7 @@ public class MainCommand implements TabExecutor {
         }
         // display help
         if (args.length == 0) {
-            return this.pluginHelper(player);
+            return pluginHelper(player);
         }
 
         DisplayBook displayBook = new DisplayBook();
@@ -34,7 +36,7 @@ public class MainCommand implements TabExecutor {
         DisplayBlock displayBlock = new DisplayBlock();
         if (args.length == 1) {
             if ("help".equals(args[0])) {
-                return this.pluginHelper(player);
+                return pluginHelper(player);
             }
             if ("block".equals(args[0])) {
                 return displayBlock.pluginHelper(player);
@@ -101,7 +103,7 @@ public class MainCommand implements TabExecutor {
         return false;
     }
 
-    private boolean pluginHelper(Player p) {
+    public static boolean pluginHelper(Player p) {
         Format.use().player().noticePrefix(p, "&7插件指南 &f版本: &71.0.0");
         Format.use().player().noticeCommand(p, "display book help", "图书创建指南");
         Format.use().player().noticeCommand(p, "display item help", "物品展示指南");
@@ -134,4 +136,5 @@ public class MainCommand implements TabExecutor {
         }
         return null;
     }
+
 }

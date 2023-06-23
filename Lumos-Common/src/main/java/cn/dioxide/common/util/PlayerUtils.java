@@ -6,6 +6,7 @@ import cn.dioxide.common.infra.EffectTarget;
 import cn.dioxide.common.infra.EventType;
 import cn.dioxide.common.infra.TrimUpgradeStore;
 import com.google.common.util.concurrent.AtomicDouble;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -16,9 +17,10 @@ import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @author Dioxide.CN
@@ -26,6 +28,18 @@ import java.util.concurrent.atomic.AtomicReference;
  * @since 1.0
  */
 public class PlayerUtils {
+    /**
+     * 获取在线所有人的玩家名
+     * @return 在线所有人的玩家名集合
+     */
+    public static List<String> getOnlinePlayerNameList() {
+        return Bukkit
+                .getOnlinePlayers()
+                .stream()
+                .map(Player::getName)
+                .collect(Collectors.toList());
+    }
+
     /**
      * 返回玩家满足的Trim增益类型和几件套
      * @param p 玩家
