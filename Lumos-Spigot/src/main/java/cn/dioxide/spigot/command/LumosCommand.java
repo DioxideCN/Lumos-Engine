@@ -1,14 +1,19 @@
 package cn.dioxide.spigot.command;
 
 import cn.dioxide.common.annotation.Executor;
+import cn.dioxide.common.extension.BeanHolder;
+import cn.dioxide.common.extension.Config;
 import cn.dioxide.common.extension.Format;
 import cn.dioxide.common.infra.WhiteList;
 import cn.dioxide.common.util.PlayerUtils;
+import cn.dioxide.spigot.LumosStarter;
 import cn.dioxide.spigot.service.WhiteListHelper;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,6 +47,15 @@ public class LumosCommand implements TabExecutor {
                 }
             }
         }
+        if (args.length == 1) {
+            if ("reload".equals(args[0])) {
+                PluginManager pluginManager = Bukkit.getPluginManager();
+                pluginManager.disablePlugin(LumosStarter.INSTANCE);
+                pluginManager.enablePlugin(LumosStarter.INSTANCE);
+                Format.use().plugin().info("&aPlugin has been reloaded.");
+                return true;
+            }
+        }
         // lumos whitelist add|remove|enable|disable
         if ((args.length == 2 || args.length == 3) && "whitelist".equals(args[0])) {
             return WhiteListHelper.handleWhiteListCommand(sender, args);
@@ -54,6 +68,7 @@ public class LumosCommand implements TabExecutor {
         Format.use().player().noticeCommand(p, "lumos", "插件指南");
         Format.use().player().noticeCommand(p, "lumos display", "展示实体创建指南");
         Format.use().player().noticeCommand(p, "lumos whitelist", "白名单指南");
+        Format.use().player().noticeCommand(p, "lumos reload", "重载插件");
         return true;
     }
 

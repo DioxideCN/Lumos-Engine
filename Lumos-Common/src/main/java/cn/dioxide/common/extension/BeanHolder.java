@@ -37,6 +37,16 @@ public class BeanHolder {
         Format.use().plugin().info("&7==============================");
     }
 
+    public static void reload(@NotNull JavaPlugin instance) {
+        plugin = instance;
+        Format.use().plugin().info("&aReloading command and event...");
+        Format.use().plugin().info("&7============&f[&3inject&f]&7============");
+        ReflectFactory.use().scanAllPackage(instance.getClass().getPackageName());
+        BeanHolder.use().loadBean();
+        BeanHolder.use().loadLoopTask();
+        Format.use().plugin().info("&7==============================");
+    }
+
     protected void loadBean() {
         int successCommand = 0, failCommand = 0, successEvent = 0, failEvent = 0;
         for (Class<?> clazz : ReflectFactory.use().getClassSet()) {

@@ -86,7 +86,8 @@ public class Config {
         this.feature.ironGolem = configs[0].getBoolean("feature.iron-golem", true);
         this.feature.summonIronGolem = configs[0].getBoolean("feature.summon-iron-golem", true);
         this.feature.stupidVillager = configs[0].getBoolean("feature.stupid-villager", true);
-        this.feature.minecartFullSpeed = configs[0].getBoolean("feature.minecart-full-speed", true);
+        this.feature.minecartSpeedEnable = configs[0].getBoolean("feature.minecart.enable", true);
+        this.feature.minecartSpeedMultiple = configs[0].getDouble("feature.minecart.multiple", 1.0D);
         this.feature.enableWhitelist = configs[0].getBoolean("feature.enable-whitelist", true);
 
         this.whiteList = new WhiteList();
@@ -125,7 +126,7 @@ public class Config {
             Format.use().plugin().finder("Crafting Table", this.feature.craftingTable);
             Format.use().plugin().finder("Iron Golem", this.feature.ironGolem);
             Format.use().plugin().finder("Stupid Villager", this.feature.stupidVillager);
-            Format.use().plugin().finder("Minecart Full Speed", this.feature.minecartFullSpeed);
+            Format.use().plugin().finder("Minecart Full Speed", this.feature.minecartSpeedEnable);
             Format.use().plugin().finder("Enable Whitelist", this.feature.enableWhitelist);
             Format.use().plugin().finder("Item Display Place Radius", this.display.item.placeRadius);
             Format.use().plugin().finder("Item Display Recycle Radius", this.display.item.recycleRadius);
@@ -263,7 +264,7 @@ public class Config {
         FEATURE_KEY_MAP.put("feature.iron-golem", config.feature.ironGolem);
         FEATURE_KEY_MAP.put("feature.summon-iron-golem", config.feature.summonIronGolem);
         FEATURE_KEY_MAP.put("feature.stupid-villager", config.feature.stupidVillager);
-        FEATURE_KEY_MAP.put("feature.minecart-full-speed", config.feature.minecartFullSpeed);
+        FEATURE_KEY_MAP.put("feature.minecart.enable", config.feature.minecartSpeedEnable);
         FEATURE_KEY_MAP.put("feature.enable-whitelist", config.feature.enableWhitelist);
     }
 
@@ -274,7 +275,8 @@ public class Config {
         public boolean ironGolem;
         public boolean summonIronGolem;
         public boolean stupidVillager;
-        public boolean minecartFullSpeed;
+        public boolean minecartSpeedEnable;
+        public double minecartSpeedMultiple;
         public boolean enableWhitelist;
     }
 

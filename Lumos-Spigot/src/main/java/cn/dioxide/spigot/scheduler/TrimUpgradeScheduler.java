@@ -23,7 +23,7 @@ public class TrimUpgradeScheduler {
     /**
      * 每2.5秒执行一次，降低服务器压力
      */
-    @LoopThis(configKey = "feature.trim-upgrade", period = 50L)
+    @LoopThis(period = 50L)
     public static void effectEnhancer() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             effectPlayer(player);
