@@ -9,6 +9,10 @@ description: 'Create infinite possibilities.'
 libraries:
   - "org.eclipse.jetty:jetty-server:11.0.14"
   - "org.eclipse.jetty:jetty-servlet:11.0.14"
+  - "com.zaxxer:HikariCP:5.0.1"
+  - "org.mybatis:mybatis:3.5.13"
+  - "com.mysql:mysql-connector-j:8.0.33"
+  - "com.google.code.gson:gson:2.10"
 commands:
   lumos:
     description: 'Get lumos engine total help'

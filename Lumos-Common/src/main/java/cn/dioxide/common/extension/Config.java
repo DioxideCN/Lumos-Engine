@@ -157,7 +157,6 @@ public class Config {
         }
         // 注入TrimUpgrade的配置
         loadTrimUpgrade();
-
         // 启动Jetty容器配置
         ApplicationConfig.use().init(configs[3]);
     }

@@ -1,3 +1,10 @@
 server:
   enable: true
   port: 8090
+
+lumos:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/lumos?useUnicode=true&useSSL=true&characterEncoding=utf8
+    username: "root"
+    password: "123456"

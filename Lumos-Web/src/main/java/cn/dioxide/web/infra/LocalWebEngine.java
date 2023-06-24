@@ -61,10 +61,12 @@ public class LocalWebEngine {
     }
 
     private void handleServletBean(final ServletContextHandler context) {
+        // 包扫描自动注入servlet
         for (Class<?> clazz : ReflectFactory.use().getClassSet()) {
-            System.out.println(clazz.getName());
+            if (!clazz.getName().contains("cn.dioxide.web")) {
+                continue;
+            }
             if (HttpServlet.class.isAssignableFrom(clazz)) {
-                System.out.println("isAssignableFrom -> " + clazz.getName());
                 ServletMapping mapping = clazz.getAnnotation(ServletMapping.class);
                 if (mapping != null) {
                     try {

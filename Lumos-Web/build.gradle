@@ -5,11 +5,17 @@ plugins {
 group = 'cn.dioxide.web'
 version = '1.0.0'
 
+repositories {
+}
+
 dependencies {
     implementation project(":Lumos-Common")
 
     implementation 'org.eclipse.jetty:jetty-server:11.0.14'
     implementation 'org.eclipse.jetty:jetty-servlet:11.0.14'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+    implementation 'org.mybatis:mybatis:3.5.13'
+    implementation 'com.mysql:mysql-connector-j:8.0.33'
 }
 
 test {

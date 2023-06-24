@@ -16,6 +16,10 @@ shadowJar {
         exclude(dependency('org.jetbrains:annotations'))
         exclude(dependency('org.jetbrains.kotlin:kotlin-stdlib-common'))
         exclude(dependency('org.jetbrains.kotlin:kotlin-stdlib'))
+        exclude(dependency('com.google.code.gson:gson:2.10'))
+        exclude(dependency('com.mysql:mysql-connector-j:8.0.33'))
+        exclude(dependency('org.mybatis:mybatis:3.5.13'))
+        exclude(dependency('com.zaxxer:HikariCP:5.0.1'))
     }
 
     archiveBaseName.set("LumosEngine")

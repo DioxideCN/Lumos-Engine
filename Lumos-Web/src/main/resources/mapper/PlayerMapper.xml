@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dioxide.web.mapper.PlayerMapper">
+
+    <select id="select" resultType="cn.dioxide.web.entity.StaticPlayer">
+        SELECT * FROM player_store WHERE name = #{name}
+    </select>
+
+    <insert id="insert" parameterType="cn.dioxide.web.entity.StaticPlayer">
+        INSERT INTO player_store(name, uuid, level, world, x, y, z) values(#{name}, #{uuid}, #{level}, #{world}, #{x}, #{y}, #{z})
+    </insert>
+
+    <update id="update" parameterType="cn.dioxide.web.entity.StaticPlayer">
+        UPDATE player_store SET uuid=#{uuid}, level=#{level}, world=#{world}, x=#{x}, y=#{y}, z=#{z} WHERE name=#{name}
+    </update>
+
+    <delete id="delete">
+        delete from player_store where name=#{name}
+    </delete>
+
+</mapper>
