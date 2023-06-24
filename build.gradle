@@ -35,13 +35,15 @@ allprojects {
 subprojects {
     // 定义子工程所有依赖
     dependencies {
-        implementation "org.spigotmc:spigot-api:$spigotVersion"
-        implementation "org.jetbrains:annotations:$annotationVersion"
+        compileOnly "org.spigotmc:spigot-api:$spigotVersion"
+        compileOnly "org.jetbrains:annotations:$annotationVersion"
         compileOnly "org.projectlombok:lombok:$lombokVersion"
 
         // 单元测试
         testImplementation platform("org.junit:junit-bom:5.9.1")
         testImplementation "org.junit.jupiter:junit-jupiter"
+
+        annotationProcessor "org.projectlombok:lombok:$lombokVersion"
     }
 
     shadowJar {

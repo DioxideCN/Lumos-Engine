@@ -7,13 +7,17 @@ version = '1.0.0'
 
 dependencies {
     implementation project(":Lumos-Common")
+    implementation project(":Lumos-Web")
 }
 
 shadowJar {
     append("plugin.yml")
     dependencies {
-        include(project(":Lumos-Common"))
+        exclude(dependency('org.jetbrains:annotations'))
+        exclude(dependency('org.jetbrains.kotlin:kotlin-stdlib-common'))
+        exclude(dependency('org.jetbrains.kotlin:kotlin-stdlib'))
     }
+
     archiveBaseName.set("LumosEngine")
     archiveVersion.set("${project.version}")
     archiveClassifier.set('')

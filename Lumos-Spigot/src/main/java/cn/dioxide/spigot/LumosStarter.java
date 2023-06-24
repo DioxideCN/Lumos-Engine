@@ -1,8 +1,10 @@
 package cn.dioxide.spigot;
 
+import cn.dioxide.common.annotation.ScanPackage;
 import cn.dioxide.common.extension.BeanHolder;
 import cn.dioxide.common.extension.Format;
 import cn.dioxide.common.extension.Config;
+import cn.dioxide.web.infra.LocalWebEngine;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -10,6 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @date 2023/6/21
  * @since 1.0
  */
+@ScanPackage({"cn.dioxide.web"})
 public class LumosStarter extends JavaPlugin {
 
     public static LumosStarter INSTANCE;
@@ -20,10 +23,12 @@ public class LumosStarter extends JavaPlugin {
         Format.init(this, "&7[&3&lLumos&b&lEngine&7]");
         Config.init(this, true);
         BeanHolder.init(this);
+        LocalWebEngine.init(this);
     }
 
     @Override
     public void onDisable() {
+        LocalWebEngine.stop();
         Format.use().plugin().info("&cPlugin has been disabled");
         super.onDisable();
     }

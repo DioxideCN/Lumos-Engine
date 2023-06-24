@@ -26,7 +26,7 @@ public class Config {
     // The static instance of the config.
     private static Config config;
     // The list of config filenames.
-    private static final String[] filenames = { "config.yml", "trim_upgrade.yml", "whitelist.yml" };
+    private static final String[] filenames = { "config.yml", "trim_upgrade.yml", "whitelist.yml", "application.yml" };
     // The list of files.
     private static File[] files;
     // The list of configs.
@@ -157,6 +157,9 @@ public class Config {
         }
         // 注入TrimUpgrade的配置
         loadTrimUpgrade();
+
+        // 启动Jetty容器配置
+        ApplicationConfig.use().init(configs[3]);
     }
 
     public static final Map<TrimPattern, TrimUpgradeStore> TRIM_UPGRADE_MAP = new HashMap<>();

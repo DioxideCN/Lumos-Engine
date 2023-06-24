@@ -3,6 +3,7 @@ package cn.dioxide.common.extension;
 import cn.dioxide.common.annotation.Executor;
 import cn.dioxide.common.annotation.Event;
 import cn.dioxide.common.annotation.LoopThis;
+import cn.dioxide.common.annotation.ScanPackage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
@@ -31,17 +32,18 @@ public class BeanHolder {
         plugin = instance;
         Format.use().plugin().info("&aInjecting command and event...");
         Format.use().plugin().info("&7============&f[&3inject&f]&7============");
-        ReflectFactory.use().scanAllPackage(instance.getClass().getPackageName());
-        BeanHolder.use().loadBean();
-        BeanHolder.use().loadLoopTask();
-        Format.use().plugin().info("&7==============================");
-    }
 
-    public static void reload(@NotNull JavaPlugin instance) {
-        plugin = instance;
-        Format.use().plugin().info("&aReloading command and event...");
-        Format.use().plugin().info("&7============&f[&3inject&f]&7============");
+        // 包扫描
         ReflectFactory.use().scanAllPackage(instance.getClass().getPackageName());
+        ScanPackage scanner = instance.getClass().getAnnotation(ScanPackage.class);
+        if (scanner != null) {
+            for (String pkg : scanner.value()) {
+                if (!pkg.isEmpty()) {
+                    ReflectFactory.use().scanAllPackage(pkg);
+                }
+            }
+        }
+
         BeanHolder.use().loadBean();
         BeanHolder.use().loadLoopTask();
         Format.use().plugin().info("&7==============================");

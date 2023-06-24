@@ -6,6 +6,9 @@ api: '1.20'
 prefix: 'LumosEngine'
 authors: [ Dioxide_CN ]
 description: 'Create infinite possibilities.'
+libraries:
+  - "org.eclipse.jetty:jetty-server:11.0.14"
+  - "org.eclipse.jetty:jetty-servlet:11.0.14"
 commands:
   lumos:
     description: 'Get lumos engine total help'

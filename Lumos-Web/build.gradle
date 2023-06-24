@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+group = 'cn.dioxide.web'
+version = '1.0.0'
+
+dependencies {
+    implementation project(":Lumos-Common")
+
+    implementation 'org.eclipse.jetty:jetty-server:11.0.14'
+    implementation 'org.eclipse.jetty:jetty-servlet:11.0.14'
+}
+
+test {
+    useJUnitPlatform()
+}

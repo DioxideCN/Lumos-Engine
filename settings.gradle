@@ -1,4 +1,5 @@
 rootProject.name = "Lumos"
 include 'Lumos-Common'
 include 'Lumos-Spigot'
+include 'Lumos-Web'
 
