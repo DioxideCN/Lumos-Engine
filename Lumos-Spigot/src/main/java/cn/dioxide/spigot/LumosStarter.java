@@ -1,6 +1,7 @@
 package cn.dioxide.spigot;
 
 import cn.dioxide.common.annotation.ScanPackage;
+import cn.dioxide.common.extension.ApplicationConfig;
 import cn.dioxide.common.extension.BeanHolder;
 import cn.dioxide.common.extension.Format;
 import cn.dioxide.common.extension.Config;
@@ -23,7 +24,9 @@ public class LumosStarter extends JavaPlugin {
         Format.init(this, "&7[&3&lLumos&b&lEngine&7]");
         Config.init(this, true);
         BeanHolder.init(this);
-        LocalWebEngine.init(this);
+        if (ApplicationConfig.use().enable) {
+            LocalWebEngine.init(this);
+        }
     }
 
     @Override

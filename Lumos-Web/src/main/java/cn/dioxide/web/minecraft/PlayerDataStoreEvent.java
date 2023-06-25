@@ -1,6 +1,7 @@
 package cn.dioxide.web.minecraft;
 
 import cn.dioxide.common.annotation.Event;
+import cn.dioxide.common.extension.ApplicationConfig;
 import cn.dioxide.web.config.ItemStackSerializer;
 import cn.dioxide.web.config.MapperConfig;
 import cn.dioxide.web.entity.StaticPlayer;
@@ -21,32 +22,33 @@ import java.util.List;
 @Event
 public class PlayerDataStoreEvent implements Listener {
 
-    PlayerMapper playerMapper = MapperConfig.use().getInstance(PlayerMapper.class);
-
     @EventHandler
     public void onJoin(PlayerQuitEvent e) {
-        Player player = e.getPlayer();
-        // Get the player's inventory data
-        List<ItemStackSerializer> inventory = ItemStackSerializer.convert(player.getInventory().getContents());
-        List<ItemStackSerializer> equipment = ItemStackSerializer.convert(player.getInventory().getArmorContents());
+        if (ApplicationConfig.use().enable) {
+            PlayerMapper playerMapper = MapperConfig.use().getInstance(PlayerMapper.class);
+            Player player = e.getPlayer();
+            // Get the player's inventory data
+            List<ItemStackSerializer> inventory = ItemStackSerializer.convert(player.getInventory().getContents());
+            List<ItemStackSerializer> equipment = ItemStackSerializer.convert(player.getInventory().getArmorContents());
 
-        // Serialize the inventory data
-        String inventoryJson = JSON.toJSONString(inventory);
-        String equipmentJson = JSON.toJSONString(equipment);
+            // Serialize the inventory data
+            String inventoryJson = JSON.toJSONString(inventory);
+            String equipmentJson = JSON.toJSONString(equipment);
 
-        // 从数据库中获取
-        StaticPlayer awaiter = playerMapper.select(player.getName());
-        if (awaiter == null) {
-            // 存入
-            awaiter = StaticPlayer.convert(player, false);
-            playerMapper.insert(awaiter);
-        } else {
-            // 更新
-            awaiter.setInv(inventoryJson);
-            awaiter.setEquip(equipmentJson);
-            playerMapper.update(awaiter);
+            // 从数据库中获取
+            StaticPlayer awaiter = playerMapper.select(player.getName());
+            if (awaiter == null) {
+                // 存入
+                awaiter = StaticPlayer.convert(player, false);
+                playerMapper.insert(awaiter);
+            } else {
+                // 更新
+                awaiter.setInv(inventoryJson);
+                awaiter.setEquip(equipmentJson);
+                playerMapper.update(awaiter);
+            }
+            MapperConfig.use().commit();
         }
-        MapperConfig.use().commit();
     }
 
 }

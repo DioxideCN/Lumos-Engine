@@ -24,6 +24,14 @@ feature:
     enable: true
     # 玩家乘坐矿车时提升的速度倍数
     multiple: 2.0
+  # 监守者掉落精修概率，最终概率是一个条件概率 P(AB)
+  warden:
+    # P(A) 死亡爆炸概率
+    explode-chance: 0.65
+    # 爆炸强度
+    explode-strength: 4.0
+    # P(B) 爆炸后掉落概率
+    drop-chance: 0.4
 # 展示实体设置
 display:
   item:

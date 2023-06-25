@@ -1,9 +1,11 @@
 package cn.dioxide.web.infra;
 
 import cn.dioxide.common.extension.ApplicationConfig;
+import cn.dioxide.common.extension.Config;
 import cn.dioxide.common.extension.Format;
 import cn.dioxide.common.extension.ReflectFactory;
 import cn.dioxide.web.annotation.ServletMapping;
+import com.mojang.datafixers.kinds.App;
 import jakarta.servlet.http.HttpServlet;
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -29,9 +31,9 @@ public class LocalWebEngine {
     private JavaPlugin plugin;
 
     public static void init(@NotNull JavaPlugin plugin) {
-        Format.use().plugin().info("Starting jetty server...");
-        instance = new LocalWebEngine();
         if (ApplicationConfig.use().enable) {
+            Format.use().plugin().info("Starting jetty server...");
+            instance = new LocalWebEngine();
             instance.start(plugin);
         }
     }
@@ -41,7 +43,7 @@ public class LocalWebEngine {
         this.server = new Server();
         // try-with-resource
         try (ServerConnector connector = new ServerConnector(this.server)) {
-            connector.setPort(8090);
+            connector.setPort(ApplicationConfig.use().port);
             this.server.setConnectors(new Connector[]{connector});
         }
 

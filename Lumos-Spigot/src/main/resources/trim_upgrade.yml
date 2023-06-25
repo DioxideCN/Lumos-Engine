@@ -51,7 +51,7 @@ upgrade:
       - netherite
     buff:
       - count: 1
-        effect: strength
+        effect: increase_damage
         effect-level: 1
         effect-target: self
   wild:
@@ -66,7 +66,7 @@ upgrade:
       - golden
     buff:
       - count: 1
-        effect: haste
+        effect: fast_digging
         effect-level: 1
         effect-target: self
   coast:
@@ -107,11 +107,11 @@ upgrade:
       - netherite
     buff:
       - count: 1
-        effect: jump_boost
+        effect: jump
         effect-level: 1
         effect-target: self
       - count: 2
-        effect: jump_boost
+        effect: jump
         effect-level: 2
         effect-target: self
   raiser:
@@ -213,7 +213,6 @@ upgrade:
       - diamond
       - netherite
     buff:
-      # 免疫负面药水效果
       - count: 1
         effect: fire_resistance
         effect-level: 1
