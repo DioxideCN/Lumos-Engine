@@ -70,7 +70,7 @@ LumosEngine为服务器提供了更方便的操作物品展示实体、方块展
 ![basic_help](image/block_display_example.png)
 
 ### 自定义的盔甲纹饰效果
-插件支持自定义盔甲纹饰的增益效果，它包括可以为穿戴者提供药水BUFF增强、将BUFF作用于攻击者、以及一些内置的事件系统。这些都可以在`trim_upgeade.yml`配置文件中惊醒配置。
+插件支持自定义盔甲纹饰的增益效果，它包括可以为穿戴者提供药水BUFF增强、将BUFF作用于攻击者、以及一些内置的事件系统。这些都可以在`trim_upgeade.yml`配置文件中进行配置。
 
 - 在配置中`trim-material`节点表示了支持的盔甲纹饰材质，可以是“铜质(copper)、紫水晶质(amethyst)、下届石英质(quartz)、青金石质(lapis)、红石质(redstone)、金质(gold)、绿宝石质(emerald)、铁质(iron)、钻石质(diamond)、下界合金质(netherite)”中的任意一种，你也可以使用`trim-material: "*"`来指定支持所有材质。
 - 在配置中`armor-material`节点表示了支持的盔甲类型，可以是“皮革(leather)、锁链(chainmail)、铁(iron)、金(golden)、钻石(diamond)、下界合金(netherite)”中的任意一种，你也可以使用`armor-material: "*"`来指定支持所有材质。
