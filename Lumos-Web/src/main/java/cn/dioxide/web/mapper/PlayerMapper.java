@@ -1,6 +1,7 @@
 package cn.dioxide.web.mapper;
 
 import cn.dioxide.web.entity.StaticPlayer;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Dioxide.CN
@@ -16,5 +17,7 @@ public interface PlayerMapper {
     void update(StaticPlayer player);
 
     void delete(String name);
+
+    StaticPlayer selectByQQ(@Nullable String qq);
 
 }

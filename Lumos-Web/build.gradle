@@ -16,6 +16,8 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'org.mybatis:mybatis:3.5.13'
     implementation 'com.mysql:mysql-connector-j:8.0.33'
+
+    compileOnly 'com.alibaba.fastjson2:fastjson2:2.0.34'
 }
 
 test {

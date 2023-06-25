@@ -1,12 +1,17 @@
 package cn.dioxide.web.minecraft;
 
 import cn.dioxide.common.annotation.Event;
+import cn.dioxide.web.config.ItemStackSerializer;
 import cn.dioxide.web.config.MapperConfig;
 import cn.dioxide.web.entity.StaticPlayer;
 import cn.dioxide.web.mapper.PlayerMapper;
+import com.alibaba.fastjson2.JSON;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import java.util.List;
 
 /**
  * @author Dioxide.CN
@@ -20,14 +25,26 @@ public class PlayerDataStoreEvent implements Listener {
 
     @EventHandler
     public void onJoin(PlayerQuitEvent e) {
-        System.out.println("玩家离开游戏");
-        // 存入或更新到数据库
-        StaticPlayer staticPlayer = StaticPlayer.convert(e.getPlayer(), false);
-        System.out.println(playerMapper.select(staticPlayer.getName()));
-        if (playerMapper.select(staticPlayer.getName()) == null) {
-            playerMapper.insert(staticPlayer);
+        Player player = e.getPlayer();
+        // Get the player's inventory data
+        List<ItemStackSerializer> inventory = ItemStackSerializer.convert(player.getInventory().getContents());
+        List<ItemStackSerializer> equipment = ItemStackSerializer.convert(player.getInventory().getArmorContents());
+
+        // Serialize the inventory data
+        String inventoryJson = JSON.toJSONString(inventory);
+        String equipmentJson = JSON.toJSONString(equipment);
+
+        // 从数据库中获取
+        StaticPlayer awaiter = playerMapper.select(player.getName());
+        if (awaiter == null) {
+            // 存入
+            awaiter = StaticPlayer.convert(player, false);
+            playerMapper.insert(awaiter);
         } else {
-            playerMapper.update(staticPlayer);
+            // 更新
+            awaiter.setInv(inventoryJson);
+            awaiter.setEquip(equipmentJson);
+            playerMapper.update(awaiter);
         }
         MapperConfig.use().commit();
     }

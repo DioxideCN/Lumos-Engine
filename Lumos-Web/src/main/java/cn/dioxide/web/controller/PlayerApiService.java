@@ -4,16 +4,15 @@ import cn.dioxide.web.annotation.ServletMapping;
 import cn.dioxide.web.config.MapperConfig;
 import cn.dioxide.web.entity.StaticPlayer;
 import cn.dioxide.web.mapper.PlayerMapper;
-import com.google.gson.Gson;
+import com.alibaba.fastjson2.JSON;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.eclipse.jetty.http.HttpStatus;
+
 import java.io.IOException;
-import java.util.UUID;
 
 /**
  * @author Dioxide.CN
@@ -44,7 +43,8 @@ public class PlayerApiService extends HttpServlet {
             // 设置响应内容类型为 JSON
             resp.setContentType("application/json");
             // 发送响应
-            resp.getWriter().write(new Gson().toJson(StaticPlayer.convert(onlinePlayer, true)));
+            StaticPlayer converter = StaticPlayer.convert(onlinePlayer, true);
+            resp.getWriter().write(JSON.toJSONString(converter));
         } else {
             // 尝试获取离线玩家
             StaticPlayer staticPlayer = playerMapper.select(playerName);
@@ -53,7 +53,7 @@ public class PlayerApiService extends HttpServlet {
                 // 设置响应内容类型为 JSON
                 resp.setContentType("application/json");
                 // 发送响应
-                resp.getWriter().write(new Gson().toJson(staticPlayer));
+                resp.getWriter().write(JSON.toJSONString(staticPlayer));
             } else {
                 resp.setStatus(HttpStatus.NOT_FOUND_404);
                 resp.getWriter().write("{\"error\": \"Player not found\"}");

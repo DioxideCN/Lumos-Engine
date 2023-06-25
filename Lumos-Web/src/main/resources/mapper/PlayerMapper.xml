@@ -8,15 +8,19 @@
     </select>
 
     <insert id="insert" parameterType="cn.dioxide.web.entity.StaticPlayer">
-        INSERT INTO player_store(name, uuid, level, world, x, y, z) values(#{name}, #{uuid}, #{level}, #{world}, #{x}, #{y}, #{z})
+        INSERT INTO player_store(name, uuid, level, world, x, y, z, qq, inv, equip) values(#{name}, #{uuid}, #{level}, #{world}, #{x}, #{y}, #{z}, #{qq}, #{inv}, #{equip})
     </insert>
 
     <update id="update" parameterType="cn.dioxide.web.entity.StaticPlayer">
-        UPDATE player_store SET uuid=#{uuid}, level=#{level}, world=#{world}, x=#{x}, y=#{y}, z=#{z} WHERE name=#{name}
+        UPDATE player_store SET uuid=#{uuid}, level=#{level}, world=#{world}, x=#{x}, y=#{y}, z=#{z}, qq=#{qq}, inv=#{inv}, equip=#{equip} WHERE name=#{name}
     </update>
 
     <delete id="delete">
         delete from player_store where name=#{name}
     </delete>
+
+    <select id="selectByQQ" resultType="cn.dioxide.web.entity.StaticPlayer">
+        SELECT * FROM player_store WHERE qq = #{qq}
+    </select>
 
 </mapper>

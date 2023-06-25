@@ -1,13 +1,25 @@
 package cn.dioxide.web.entity;
 
+import cn.dioxide.web.config.ItemStackSerializer;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.annotation.JSONField;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * @author Dioxide.CN
  * @date 2023/6/24
  * @since 1.0
  */
+@Getter
+@Setter
+@NoArgsConstructor
 public class StaticPlayer {
 
     /**
@@ -50,8 +62,37 @@ public class StaticPlayer {
      */
     private Double z;
 
+    /**
+     * qq
+     */
+    private @Nullable String qq;
+
+    /**
+     * 背包
+     */
+    @JSONField(serialize = false)
+    private @Nullable String inv;
+
+    private @Nullable List<ItemStackSerializer> inventory;
+
+    /**
+     * 装备
+     */
+    @JSONField(serialize = false)
+    private @Nullable String equip;
+
+    private @Nullable List<ItemStackSerializer> equipments;
+
     public static StaticPlayer convert(Player player, boolean isOnline) {
         Location location = player.getLocation();
+        // Get the player's inventory data
+        List<ItemStackSerializer> inventory = ItemStackSerializer.convert(player.getInventory().getContents());
+        List<ItemStackSerializer> equipment = ItemStackSerializer.convert(player.getInventory().getArmorContents());
+
+        // Serialize the inventory data
+        String inventoryJson = JSON.toJSONString(inventory);
+        String equipmentJson = JSON.toJSONString(equipment);
+
         return new StaticPlayer(
                 isOnline,
                 player.getName(),
@@ -60,13 +101,12 @@ public class StaticPlayer {
                 location.getWorld() == null ? "overworld" : location.getWorld().getName(),
                 location.getX(),
                 location.getY(),
-                location.getZ());
+                location.getZ(),
+                inventoryJson,
+                equipmentJson);
     }
 
-    public StaticPlayer() {
-    }
-
-    public StaticPlayer(boolean isOnline, String name, String uuid, Integer level, String world, Double x, Double y, Double z) {
+    private StaticPlayer(boolean isOnline, String name, String uuid, Integer level, String world, Double x, Double y, Double z, @Nullable String inv, @Nullable String equip) {
         this.isOnline = isOnline;
         this.name = name;
         this.uuid = uuid;
@@ -75,69 +115,28 @@ public class StaticPlayer {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.inv = inv;
+        this.equip = equip;
+
+        if (this.inv != null) {
+            this.inventory = JSON.parseArray(this.inv, ItemStackSerializer.class);
+        }
+        if (this.equip != null) {
+            this.equipments = JSON.parseArray(this.equip, ItemStackSerializer.class);
+        }
     }
 
-    public boolean isOnline() {
-        return isOnline;
+    public void setInv(@Nullable String inv) {
+        this.inv = inv;
+        if (this.inv != null) {
+            this.inventory = JSON.parseArray(this.inv, ItemStackSerializer.class);
+        }
     }
 
-    public void setOnline(boolean online) {
-        isOnline = online;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public Integer getLevel() {
-        return level;
-    }
-
-    public void setLevel(Integer level) {
-        this.level = level;
-    }
-
-    public String getWorld() {
-        return world;
-    }
-
-    public void setWorld(String world) {
-        this.world = world;
-    }
-
-    public Double getX() {
-        return x;
-    }
-
-    public void setX(Double x) {
-        this.x = x;
-    }
-
-    public Double getY() {
-        return y;
-    }
-
-    public void setY(Double y) {
-        this.y = y;
-    }
-
-    public Double getZ() {
-        return z;
-    }
-
-    public void setZ(Double z) {
-        this.z = z;
+    public void setEquip(@Nullable String equip) {
+        this.equip = equip;
+        if (this.equip != null) {
+            this.equipments = JSON.parseArray(this.equip, ItemStackSerializer.class);
+        }
     }
 }
