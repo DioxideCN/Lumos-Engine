@@ -138,7 +138,10 @@ upgrade:
         effect-target: self
   host:
     trim-material:
+      - emerald
     armor-material:
+      - diamond
+      - netherite
     buff:
       # 剥削村民
       - count: 2
@@ -203,7 +206,12 @@ upgrade:
         event-chance: 1.0
   rib:
     trim-material:
+      - emerald
+      - diamond
+      - netherite
     armor-material:
+      - diamond
+      - netherite
     buff:
       # 免疫负面药水效果
       - count: 1
