@@ -88,9 +88,9 @@ public class Config {
         this.feature.stupidVillager = configs[0].getBoolean("feature.stupid-villager", true);
         this.feature.minecartSpeedEnable = configs[0].getBoolean("feature.minecart.enable", true);
         this.feature.minecartSpeedMultiple = configs[0].getDouble("feature.minecart.multiple", 1.0D);
-        this.feature.wardenExplodeChance = configs[0].getDouble("feature.minecart.explode-chance", 1.0D);
-        this.feature.wardenExplodeStrength = configs[0].getDouble("feature.minecart.explode-strength", 1.0D);
-        this.feature.wardenDropChance = configs[0].getDouble("feature.minecart.drop-chance", 1.0D);
+        this.feature.wardenExplodeChance = configs[0].getDouble("feature.minecart.explode-chance", 0.65D);
+        this.feature.wardenExplodeStrength = configs[0].getDouble("feature.minecart.explode-strength", 4.0D);
+        this.feature.wardenDropChance = configs[0].getDouble("feature.minecart.drop-chance", 0.4D);
         this.feature.enableWhitelist = configs[0].getBoolean("feature.enable-whitelist", true);
 
         this.whiteList = new WhiteList();
