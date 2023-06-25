@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
+import java.util.List;
 import java.util.Objects;
 
 @Event
@@ -125,17 +126,28 @@ public class BookDisplayEvent implements Listener {
     public void playerRemoveBookFromWall(HangingBreakByEntityEvent e) {
         if (e.getEntity() instanceof ItemFrame itemFrame &&
                 e.getRemover() instanceof Player player) {
-            // 是否被固定并且tag包含 owner.player_name
-            if ((itemFrame.isFixed() &&
-                    itemFrame.getScoreboardTags().contains("owner." + player.getName())) ||
-                    player.isOp()) {
-                // 掉落展示框中的书本
-                ItemStack item = itemFrame.getItem();
-                itemFrame.getWorld().dropItemNaturally(itemFrame.getLocation(), item);
-                itemFrame.remove();
-            } else {
-                Format.use().player().notice(player, "&c该成书展示架不属于你");
-                e.setCancelled(true);
+
+            // 检查物品展示框中的物品
+            ItemStack item = itemFrame.getItem();
+            if (item.getType() == Material.WRITTEN_BOOK) {
+                BookMeta bookMeta = (BookMeta) item.getItemMeta();
+                if (bookMeta != null) {
+                    List<String> lores = bookMeta.getLore();
+                    if (lores != null && lores.stream().anyMatch(lore -> lore.contains("右键方块放置激活的成书"))) {
+                        // 是否被固定并且tag包含 owner.player_name
+                        if ((itemFrame.isFixed() &&
+                                itemFrame.getScoreboardTags().contains("owner." + player.getName())) ||
+                                player.isOp()) {
+
+                            // 掉落展示框中的书本
+                            itemFrame.getWorld().dropItemNaturally(itemFrame.getLocation(), item);
+                            itemFrame.remove();
+                        } else {
+                            Format.use().player().notice(player, "&c该成书展示架不属于你");
+                            e.setCancelled(true);
+                        }
+                    }
+                }
             }
         }
     }
