@@ -39,8 +39,13 @@ public class StupidVillagerFeature implements Listener {
 
     @EventHandler
     public void onVillagerCareerChange(VillagerCareerChangeEvent event) {
-        // 取消村民职业变化事件
-        event.setCancelled(true);
+        Villager villager = event.getEntity();
+        // 检查村民是否已经有职业
+        if (villager.getProfession() != Villager.Profession.NONE) {
+            // 如果村民已经有职业，取消职业变化事件
+            event.setCancelled(true);
+        }
+        // 如果村民还没有职业，允许事件继续，不执行任何操作
     }
 
     @EventHandler
