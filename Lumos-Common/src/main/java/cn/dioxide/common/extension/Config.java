@@ -82,8 +82,6 @@ public class Config {
         this.feature = new Feature();
         this.feature.protectTerrain = configs[0].getBoolean("feature.protect-terrain", true);
         this.feature.preventedEnderman = configs[0].getBoolean("feature.prevented-enderman", true);
-        this.feature.craftingTable = configs[0].getBoolean("feature.crafting-table", true);
-        this.feature.ironGolem = configs[0].getBoolean("feature.iron-golem", true);
         this.feature.summonIronGolem = configs[0].getBoolean("feature.summon-iron-golem", true);
         this.feature.stupidVillager = configs[0].getBoolean("feature.stupid-villager", true);
         this.feature.minecartSpeedEnable = configs[0].getBoolean("feature.minecart.enable", true);
@@ -126,8 +124,6 @@ public class Config {
             String[] dimensions = {"X", "Y", "Z"};
             Format.use().plugin().finder("Version", this.version);
             Format.use().plugin().finder("Protect Terrain", this.feature.protectTerrain);
-            Format.use().plugin().finder("Crafting Table", this.feature.craftingTable);
-            Format.use().plugin().finder("Iron Golem", this.feature.ironGolem);
             Format.use().plugin().finder("Stupid Villager", this.feature.stupidVillager);
             Format.use().plugin().finder("Minecart Full Speed", this.feature.minecartSpeedEnable);
             Format.use().plugin().finder("Enable Whitelist", this.feature.enableWhitelist);
@@ -265,8 +261,6 @@ public class Config {
     private static void featureKeyMap() {
         FEATURE_KEY_MAP.put("feature.protect-terrain", config.feature.protectTerrain);
         FEATURE_KEY_MAP.put("feature.prevented-enderman", config.feature.preventedEnderman);
-        FEATURE_KEY_MAP.put("feature.crafting-table", config.feature.craftingTable);
-        FEATURE_KEY_MAP.put("feature.iron-golem", config.feature.ironGolem);
         FEATURE_KEY_MAP.put("feature.summon-iron-golem", config.feature.summonIronGolem);
         FEATURE_KEY_MAP.put("feature.stupid-villager", config.feature.stupidVillager);
         FEATURE_KEY_MAP.put("feature.minecart.enable", config.feature.minecartSpeedEnable);
@@ -276,8 +270,6 @@ public class Config {
     public static class Feature {
         public boolean protectTerrain;
         public boolean preventedEnderman;
-        public boolean craftingTable;
-        public boolean ironGolem;
         public boolean summonIronGolem;
         public boolean stupidVillager;
         public boolean minecartSpeedEnable;

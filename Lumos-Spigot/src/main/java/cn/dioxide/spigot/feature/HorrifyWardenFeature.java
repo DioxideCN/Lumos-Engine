@@ -19,6 +19,7 @@ import org.bukkit.loot.LootTable;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -141,6 +142,9 @@ public class HorrifyWardenFeature implements Listener {
                         wardenAngryAbility(warden);
                         handleWardenTrapped(warden);
                         evaporativeFluid(warden);
+                        // 从这里开始恶心玩家
+                        wardenAngryAction(warden);
+                        wardenAgitatedAction(warden);
                     }
                 }
             }
@@ -160,24 +164,30 @@ public class HorrifyWardenFeature implements Listener {
         }
     }
 
+    private static final Map<UUID, Integer> wardenAgitatedTaskIDs = new HashMap<>();
+
     /**
      * 监守者的最大愤怒值达到40时会每隔18秒为半径20格内的玩家加持13秒的缓慢I、黑暗、虚弱I药水效果
      */
-    @LoopThis(period = 360L)
-    public static void wardenAgitatedAction() {
-        for (World world : Bukkit.getWorlds()) {
-            for (Entity entity : world.getEntities()) {
-                if (entity instanceof Warden warden) {
-                    if (warden.getScoreboardTags().contains("warden.slave")) continue;
-                    if (warden.getAnger() >= 30 && warden.getAnger() <= 50) {
-                        for (Entity nearbyEntity : warden.getNearbyEntities(20, 20, 20)) {
-                            if (nearbyEntity instanceof Player player) {
-                                effectDebuff2Player(player, 13);
-                            }
+    public static void wardenAgitatedAction(Warden warden) {
+        if (warden.getScoreboardTags().contains("warden.slave")) return;
+        if (warden.getAngerLevel() == Warden.AngerLevel.AGITATED && !wardenAgitatedTaskIDs.containsKey(warden.getUniqueId())) {
+            BukkitScheduler scheduler = Bukkit.getScheduler();
+            int taskID = scheduler.scheduleSyncRepeatingTask(LumosStarter.INSTANCE, () -> {
+                if (warden.getAnger() >= 30 && warden.getAnger() <= 50) {
+                    for (Entity nearbyEntity : warden.getNearbyEntities(20, 20, 20)) {
+                        if (nearbyEntity instanceof Player player) {
+                            effectDebuff2Player(player, 13);
                         }
                     }
                 }
-            }
+            }, 0L, 300L);
+            wardenAgitatedTaskIDs.put(warden.getUniqueId(), taskID);
+        } else if (warden.getAngerLevel() != Warden.AngerLevel.AGITATED && wardenAgitatedTaskIDs.containsKey(warden.getUniqueId())) {
+            // Warden is no longer angry, cancel the task
+            int taskID = wardenAgitatedTaskIDs.get(warden.getUniqueId());
+            Bukkit.getScheduler().cancelTask(taskID);
+            wardenAgitatedTaskIDs.remove(warden.getUniqueId());
         }
     }
 
@@ -204,103 +214,148 @@ public class HorrifyWardenFeature implements Listener {
         }
     }
 
+    private static final Map<UUID, Integer> wardenAngryTaskIDs = new HashMap<>();
+
     /**
      * 监守者的最大愤怒值达到80时会每隔18秒破坏21x21x21范围内的所有钟、发射器、投掷器、黑曜石、哭泣黑曜石、矿车、船
-     * 同时增加其20%~100%的伤害抗性，并为半径21格内的玩家加持13秒的缓慢I、黑暗、虚弱药水效果
+     * 同时增加其20%~80%的伤害抗性，并为半径21格内的玩家加持13秒的缓慢I、黑暗、虚弱药水效果
      * 如果24x24x24范围内没有warden.slave则尝试生成一个
      */
-    @LoopThis(period = 360L)
-    public static void wardenAngryAction() {
-        for (World world : Bukkit.getWorlds()) {
-            for (Entity entity : world.getEntities()) {
-                if (entity instanceof Warden warden) {
-                    if (warden.getScoreboardTags().contains("warden.slave")) continue;
-                    if (warden.getAngerLevel() == Warden.AngerLevel.ANGRY) {
-                        List<Block> blocks = getRegionBlocks(warden.getLocation(), 10, 10, 10);
-                        for (Block block : blocks) {
-                            if (block.getType() == Material.OBSIDIAN ||
-                                    block.getType() == Material.CRYING_OBSIDIAN) {
-                                block.setType(Material.SCULK);
-                            }
-                        }
-                        int playerCount = 0;
-                        for (Entity nearbyEntity : warden.getNearbyEntities(21, 21, 21)) {
-                            if (nearbyEntity instanceof Player player) {
-                                playerCount++;
-                                effectDebuff2Player(player, 15);
-                            }
-                            if (nearbyEntity.getType() == EntityType.BOAT ||
-                                    nearbyEntity.getType() == EntityType.CHEST_BOAT ||
-                                    nearbyEntity.getType() == EntityType.MINECART ||
-                                    nearbyEntity.getType() == EntityType.MINECART_CHEST ||
-                                    nearbyEntity.getType() == EntityType.MINECART_COMMAND ||
-                                    nearbyEntity.getType() == EntityType.MINECART_FURNACE ||
-                                    nearbyEntity.getType() == EntityType.MINECART_HOPPER ||
-                                    nearbyEntity.getType() == EntityType.MINECART_TNT ||
-                                    nearbyEntity.getType() == EntityType.MINECART_MOB_SPAWNER) {
-                                nearbyEntity.remove();
-                            }
-                        }
-                        // 20%~100%伤害抗性
-                        warden.addPotionEffect(new PotionEffect(
-                                PotionEffectType.DAMAGE_RESISTANCE,
-                                160,
-                                // 0-1 100% 2 80% 3 60% > 3 20%
-                                playerCount <= 1 ? 4 : playerCount == 2 ? 3 : playerCount == 3 ? 2 : 0,
-                                true,
-                                false,
-                                false));
+    public static void wardenAngryAction(Warden warden) {
+        if (warden.getScoreboardTags().contains("warden.slave")) return;
+        if (warden.getAngerLevel() == Warden.AngerLevel.ANGRY && !wardenAngryTaskIDs.containsKey(warden.getUniqueId())) {
+            BukkitScheduler scheduler = Bukkit.getScheduler();
+            int taskID = scheduler.scheduleSyncRepeatingTask(LumosStarter.INSTANCE, () -> {
+                List<Block> blocks = getRegionBlocks(warden.getLocation(), 10, 10, 10);
+                for (Block block : blocks) {
+                    if (block.getType() == Material.OBSIDIAN ||
+                            block.getType() == Material.CRYING_OBSIDIAN ||
+                            block.getType() == Material.BELL ||
+                            block.getType() == Material.REPEATER ||
+                            block.getType() == Material.DISPENSER) {
+                        block.setType(Material.SCULK);
                     }
+                }
+                int playerCount = 0;
+                for (Entity nearbyEntity : warden.getNearbyEntities(21, 21, 21)) {
+                    if (nearbyEntity instanceof Player player) {
+                        playerCount++;
+                        effectDebuff2Player(player, 15);
+                    }
+                    if (nearbyEntity.getType() == EntityType.BOAT ||
+                            nearbyEntity.getType() == EntityType.CHEST_BOAT ||
+                            nearbyEntity.getType() == EntityType.MINECART ||
+                            nearbyEntity.getType() == EntityType.MINECART_CHEST ||
+                            nearbyEntity.getType() == EntityType.MINECART_COMMAND ||
+                            nearbyEntity.getType() == EntityType.MINECART_FURNACE ||
+                            nearbyEntity.getType() == EntityType.MINECART_HOPPER ||
+                            nearbyEntity.getType() == EntityType.MINECART_TNT ||
+                            nearbyEntity.getType() == EntityType.MINECART_MOB_SPAWNER) {
+                        nearbyEntity.remove();
+                    }
+                }
+                // 20%~100%伤害抗性10s
+                warden.addPotionEffect(new PotionEffect(
+                        PotionEffectType.DAMAGE_RESISTANCE,
+                        260,
+                        // 0-1 80% 2 60% 3 40% > 3 20%
+                        playerCount <= 1 ? 3 : playerCount == 2 ? 2 : playerCount == 3 ? 1 : 0,
+                        true,
+                        false,
+                        false));
+                splitWarden(warden);
+                wardenLifeRecovery(warden);
+            }, 0L, 360L);
+            wardenAngryTaskIDs.put(warden.getUniqueId(), taskID);
+        } else if (warden.getAngerLevel() != Warden.AngerLevel.ANGRY && wardenAngryTaskIDs.containsKey(warden.getUniqueId())) {
+            // Warden is no longer angry, cancel the task
+            int taskID = wardenAngryTaskIDs.get(warden.getUniqueId());
+            Bukkit.getScheduler().cancelTask(taskID);
+            wardenAngryTaskIDs.remove(warden.getUniqueId());
+        }
+    }
+
+    /**
+     * warden会从slaveWarden上吸血
+     */
+    private static void wardenLifeRecovery(Warden warden) {
+        if (warden.getHealth() < 250) {
+            for (Entity nearbyEntity : warden.getNearbyEntities(16, 16, 16)) {
+                if (nearbyEntity instanceof Warden slaveWarden
+                        && slaveWarden.getScoreboardTags().contains("warden.slave")
+                        && slaveWarden.getHealth() > 80) {
+                    // 抽取25%的生命值
+                    double amountToTransfer = slaveWarden.getHealth() * 0.4;
+                    if (slaveWarden.getHealth() - amountToTransfer < 80) {
+                        amountToTransfer = slaveWarden.getHealth() - 80;
+                    }
+                    slaveWarden.setHealth(slaveWarden.getHealth() - amountToTransfer);
+                    warden.setHealth(warden.getHealth() + amountToTransfer);
+                    slaveWarden.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 40, 1, false, false));
+                    break;
                 }
             }
         }
     }
 
     /**
-     * 处于愤怒的监守者会每10秒尝试生成一个分裂体（最多一个），分裂体是普通的监守者不会具有监守者本体的能力，但同样会免疫一些伤害和不合理事件
+     * 处于愤怒的监守者会每20秒尝试生成一个分裂体，分裂体是普通的监守者不会具有监守者本体的能力，但同样会免疫一些伤害和不合理事件
      */
-    @LoopThis(period = 200L)
-    public static void splitWarden() {
-        for (World world : Bukkit.getWorlds()) {
-            for (Entity entity : world.getEntities()) {
-                if (entity instanceof Warden warden) {
-                    if (warden.getScoreboardTags().contains("warden.slave")) continue;
-                    if (warden.getAngerLevel() == Warden.AngerLevel.ANGRY) {
-                        for (Entity nearbyEntity : warden.getNearbyEntities(24, 24, 24)) {
-                            if (nearbyEntity instanceof Warden slaveWarden) {
-                                if (slaveWarden.getScoreboardTags().contains("warden.slave")) return;
-                            }
-                        }
-                        // 没有slaveWarden存在，则尝试生成一个血量为250，伤害为15，tag为"warden.slave"的warden
-                        // 获取warden面朝的方向并计算左右的方向
-                        Vector direction = warden.getLocation().getDirection();
-                        Vector leftDirection = new Vector(-direction.getZ(), 0, direction.getX()).normalize();
-                        Vector rightDirection = new Vector(direction.getZ(), 0, -direction.getX()).normalize();
-                        // 获取新的位置
-                        Location newWardenLocation = warden.getLocation().clone().add(rightDirection);
-                        // 生成新的warden
-                        Warden newWarden = (Warden) warden.getWorld().spawnEntity(newWardenLocation, EntityType.WARDEN);
-                        // 设置新的warden的属性
-                        AttributeInstance maxHealthAttribute = newWarden.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-                        if (maxHealthAttribute != null) {
-                            maxHealthAttribute.setBaseValue(250);
-                            newWarden.setHealth(250);
-                        }
-                        AttributeInstance attackDamageAttribute = newWarden.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
-                        if (attackDamageAttribute != null) {
-                            attackDamageAttribute.setBaseValue(15);
-                        }
-                        newWarden.addScoreboardTag("warden.slave");
-                        // 给原始的warden和新的warden添加推力
-                        double pushAmount = 1.0;
-                        warden.setVelocity(leftDirection.multiply(pushAmount));
-                        newWarden.setVelocity(rightDirection.multiply(pushAmount));
-                        // 播放声音
-                        warden.getWorld().playSound(newWardenLocation, Sound.ENTITY_WARDEN_EMERGE, 1.0f, 1.0f);
+    public static void splitWarden(Warden warden) {
+        if (warden.getScoreboardTags().contains("warden.slave")) return;
+        if (warden.getAngerLevel() == Warden.AngerLevel.ANGRY) {
+            int nearbyPlayersCount = 0;
+            int nearbySlaveWardensCount = 0;
+            for (Entity nearbyEntity : warden.getNearbyEntities(24, 24, 24)) {
+                if (nearbyEntity instanceof Player) {
+                    nearbyPlayersCount++;
+                }
+                if (nearbyEntity instanceof Warden slaveWarden) {
+                    if (slaveWarden.getScoreboardTags().contains("warden.slave")) {
+                        nearbySlaveWardensCount++;
                     }
                 }
             }
+            if ((nearbyPlayersCount > 2 && nearbySlaveWardensCount < 3) ||
+                    (nearbyPlayersCount == 1 && nearbySlaveWardensCount == 0)) {
+                splitWardenAction(warden);
+            }
         }
+    }
+
+    /**
+     * 没有slaveWarden存在，则尝试生成一个血量为250，伤害为15，tag为"warden.slave"的warden
+     */
+    private static void splitWardenAction(Warden warden) {
+        // 获取warden面朝的方向并计算左右的方向
+        Vector direction = warden.getLocation().getDirection();
+        Vector leftDirection = new Vector(-direction.getZ(), 0, direction.getX()).normalize();
+        Vector rightDirection = new Vector(direction.getZ(), 0, -direction.getX()).normalize();
+        // 获取新的位置
+        Location newWardenLocation = warden.getLocation().clone().add(rightDirection);
+        // 生成新的warden
+        Warden newWarden = (Warden) warden.getWorld().spawnEntity(newWardenLocation, EntityType.WARDEN);
+        // 设置新的warden的属性
+        AttributeInstance maxHealthAttribute = newWarden.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        if (maxHealthAttribute != null) {
+            maxHealthAttribute.setBaseValue(250);
+            newWarden.setHealth(250);
+        }
+        AttributeInstance attackDamageAttribute = newWarden.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+        if (attackDamageAttribute != null) {
+            attackDamageAttribute.setBaseValue(15);
+        }
+        newWarden.addScoreboardTag("warden.slave");
+        // 给原始的warden和新的warden添加推力
+        double pushAmount = 0.6;
+        warden.setVelocity(leftDirection.multiply(pushAmount));
+        newWarden.setVelocity(rightDirection.multiply(pushAmount));
+        // 播放声音
+        warden.getWorld().playSound(newWardenLocation,
+                Sound.ENTITY_WARDEN_EMERGE,
+                SoundCategory.BLOCKS,
+                2.0f,
+                1.0f);
     }
 
     /**
@@ -602,6 +657,26 @@ public class HorrifyWardenFeature implements Listener {
         } else {
             // 处理LootTable找不到的情况
             System.out.println("LootTable not found");
+        }
+    }
+
+    @LoopThis(period = 60L)
+    public static void cleanUpMaps() {
+        // List of Maps to clean up
+        doCleanUpMaps(wardenCheckStartTime);
+        doCleanUpMaps(isWardenConsistentlyTrapped);
+        doCleanUpMaps(wardenAgitatedTaskIDs);
+    }
+
+    private static void doCleanUpMaps(Map<UUID, ?> map) {
+        Iterator<UUID> iterator = map.keySet().iterator();
+        while (iterator.hasNext()) {
+            UUID uuid = iterator.next();
+            Entity entity = Bukkit.getEntity(uuid);
+            // If the entity does not exist, remove the UUID from the map
+            if (entity == null) {
+                iterator.remove();
+            }
         }
     }
 

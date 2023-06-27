@@ -97,7 +97,6 @@ public class ProbabilityDropEvent implements Listener {
     }
 
     private boolean shouldDropItem(double damageRatio) {
-        System.out.println(damageRatio);
         if (damageRatio < THRESHOLD) {
             return false;
         }
@@ -111,7 +110,7 @@ public class ProbabilityDropEvent implements Listener {
         } else {
             return true;
         }
-        return Math.random() < probability;
+        return Math.random() < probability - 0.2;
     }
 
 }

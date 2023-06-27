@@ -8,10 +8,6 @@ feature:
   protect-terrain: true
   # 是否阻止末影人拿起方块
   prevented-enderman: true
-  # 是否启用工作台破坏后只掉落1-3个木板
-  crafting-table: true
-  # 是否下调铁傀儡的掉落物为0-3个铁粒
-  iron-golem: true
   # 是否禁用铁傀儡的自然生成，玩家造的不算
   summon-iron-golem: true
   # 是否启用更蠢的村民，启用后村民不会繁殖、不会刷新职业、不会刷新交易次数、不会穿过地狱门
