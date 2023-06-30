@@ -17,11 +17,11 @@ ext {
     lombokVersion = "1.18.28"
 }
 
-def buildToolsJar = new File(buildDir, "BuildTools.jar")
 def buildToolsDir = new File(buildDir, "buildtools")
+def buildToolsJar = new File(buildDir, "buildtools/BuildTools.jar")
 def spigotJar = new File(buildToolsDir, "spigot-${spigotVersion}.jar")
 def outputShadeJar = new File(buildDir, "libs/LumosEngine-${version}-all.jar")
-def specialSourceJar = new File(buildDir, "SpecialSource.jar")
+def specialSourceJar = new File(buildDir, "specialsource/SpecialSource.jar")
 def ssiJar = new File(buildDir, "specialsource/LumosEngine-${version}-all.jar")
 def ssobfJar = new File(buildDir, "specialsource/LumosEngine-${version}-rmo.jar")
 def ssJar = new File(buildDir, "specialsource/LumosEngine-${version}-rma.jar")
@@ -33,7 +33,7 @@ def m2s = m2.getAbsolutePath()
 dependencies {
     implementation project(":Lumos-Spigot")
     implementation project(":Lumos-Common")
-//    implementation project(":Lumos-Web")
+    implementation project(":Lumos-Web")
 }
 
 // ****** 混淆构建
@@ -53,13 +53,13 @@ tasks.register('copyBuildToSpecialSource', Copy) {
     dependsOn(downloadSpecialSource, shadowJar)
 }
 
-// ssiJar和ssobfJar进行混淆
+// ssiJar 和 ssobfJar 进行混淆 得到-rmo.jar
 tasks.register('specialSourceRemapObfuscate', JavaExec) {
     group 'remapping'
     dependsOn(copyBuildToSpecialSource, downloadSpecialSource, shadowJar)
     workingDir = specialSourceFolder
     classpath = files(specialSourceJar,
-            new File("${m2s}/org/spigotmc/spigot/${spigotVersion}/spigot-${spigotVersion}-remapped-mojang.jar"))
+            new File(m2s + "/org/spigotmc/spigot/" + spigotVersion + "/spigot-" + spigotVersion + "-remapped-mojang.jar"))
     mainClass = "net.md_5.specialsource.SpecialSource"
     args = [
             "--live",
@@ -68,18 +68,18 @@ tasks.register('specialSourceRemapObfuscate', JavaExec) {
             "-o",
             ssobfJar.getName(),
             "-m",
-            "${m2s}/org/spigotmc/minecraft-server/${spigotVersion}/minecraft-server-${spigotVersion}-maps-mojang.txt",
+            m2s + "/org/spigotmc/minecraft-server/" + spigotVersion + "/minecraft-server-" + spigotVersion + "-maps-mojang.txt",
             "--reverse",
     ]
 }
 
-// ssobfJar和ssJar进行混淆
+// ssobfJar 和 ssJar 进行混淆 得到-rma.jar
 tasks.register('specialSourceRemap', JavaExec) {
     group 'remapping'
     dependsOn(specialSourceRemapObfuscate)
     workingDir = specialSourceFolder
     classpath = files(specialSourceJar,
-            new File("${m2s}/org/spigotmc/spigot/${spigotVersion}/spigot-${spigotVersion}-remapped-obf.jar"))
+            new File(m2s + "/org/spigotmc/spigot/" + spigotVersion + "/spigot-" + spigotVersion + "-remapped-obf.jar"))
     mainClass = "net.md_5.specialsource.SpecialSource"
     args = [
             "--live",
@@ -88,7 +88,7 @@ tasks.register('specialSourceRemap', JavaExec) {
             "-o",
             ssJar.getName(),
             "-m",
-            "${m2s}/org/spigotmc/minecraft-server/${spigotVersion}/minecraft-server-${spigotVersion}-maps-spigot.csrg"
+            m2s + "/org/spigotmc/minecraft-server/" + spigotVersion + "/minecraft-server-" + spigotVersion + "-maps-spigot.csrg"
     ]
 }
 
