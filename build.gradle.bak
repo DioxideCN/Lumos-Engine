@@ -1,0 +1,112 @@
+import de.undercouch.gradle.tasks.download.Download
+
+plugins {
+    id 'java'
+    id 'java-library'
+    id "de.undercouch.download" version "5.0.1"
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = "cn.dioxide.app"
+version = "1.0.0"
+
+ext {
+    spigotVersion = "1.20.1-R0.1-SNAPSHOT"
+    annotationVersion = "23.0.0"
+    lombokVersion = "1.18.28"
+}
+
+def buildToolsJar = new File(buildDir, "BuildTools.jar")
+def buildToolsDir = new File(buildDir, "buildtools")
+def spigotJar = new File(buildToolsDir, "spigot-${spigotVersion}.jar")
+
+// 下载BuildTools
+task downloadBuildTools(type: Download) {
+    group 'setup'
+    src "https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar"
+    dest buildToolsJar
+    onlyIf { !buildToolsJar.exists() }
+}
+
+// 构建BuildTools
+task buildSpigot(type: JavaExec, dependsOn: downloadBuildTools) {
+    group 'setup'
+    classpath = files(buildToolsJar)
+    args = [
+            "--rev",
+            "1.20.1",
+            "--compile",
+            "spigot",
+            "--remap"
+    ]
+    workingDir = buildToolsDir
+    doLast {
+        configurations.runtimeClasspath.files { it.name.startsWith("spigot") }
+    }
+    onlyIf { !spigotJar.exists() }
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+
+    repositories {
+        mavenLocal {
+            content {
+                includeGroup("org.bukkit")
+                includeGroup("org.spigotmc")
+            }
+        }
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+        maven { url 'https://papermc.io/repo/repository/maven-public/' }
+        maven { url 'https://oss.sonatype.org/content/groups/public/' }
+        maven { url 'https://repo.codemc.org/repository/maven-public/' }
+        maven { url 'https://repo.dmulloy2.net/repository/public/' }
+        mavenLocal()
+    }
+}
+
+subprojects {
+    configurations.all {
+        resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds' // Do not cache dynamic versions
+    }
+
+    dependencies {
+        compileOnly "org.spigotmc:spigot-api:${spigotVersion}"
+        compileOnly "org.spigotmc:minecraft-server:${spigotVersion}"
+        compileOnly "org.bukkit:craftbukkit:${spigotVersion}:remapped-mojang"
+        compileOnly "org.jetbrains:annotations:$annotationVersion"
+        compileOnly "org.projectlombok:lombok:$lombokVersion"
+        testImplementation platform("org.junit:junit-bom:5.9.1")
+        testImplementation "org.junit.jupiter:junit-jupiter"
+        annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    }
+
+    shadowJar {
+        append("plugin.yml")
+    }
+
+    artifacts {
+        archives shadowJar
+    }
+
+    tasks.test {
+        useJUnitPlatform()
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

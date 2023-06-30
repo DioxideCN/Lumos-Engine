@@ -46,7 +46,8 @@ public class ServerApiService extends HttpServlet {
     private double[] getServerTPS() {
         CraftServer craftServer = (CraftServer) Bukkit.getServer();
         MinecraftServer minecraftServer = craftServer.getServer();
-        return minecraftServer.recentTps;
+//        return minecraftServer.recentTps;
+        return null;
     }
 
     public record ServerInfo(double[] tps,

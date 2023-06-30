@@ -2,6 +2,9 @@ package cn.dioxide.common.util;
 
 import org.joml.Matrix4f;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+
 /**
  * 用于计算仿射变换后的4阶矩阵工具
  *
@@ -13,31 +16,32 @@ public class MatrixUtils {
 
     private MatrixUtils() {}
 
-    // 计算旋转的仿射矩阵
     public static Matrix4f getMatrix(double rx, double ry, double rz) {
         Matrix4f affineMatrix = new Matrix4f();
         // 3D Rotate
-        affineMatrix.rotateX((float) Math.toRadians(rx));
-        affineMatrix.rotateY((float) Math.toRadians(ry));
-        affineMatrix.rotateZ((float) Math.toRadians(rz));
-
+        affineMatrix.rotateX(convertDoubleToFloat(Math.toRadians(rx)));
+        affineMatrix.rotateY(convertDoubleToFloat(Math.toRadians(ry)));
+        affineMatrix.rotateZ(convertDoubleToFloat(Math.toRadians(rz)));
         return affineMatrix;
     }
 
-    // 计算旋转和缩放的仿射矩阵
     public static Matrix4f getMatrix(double rx, double ry, double rz, double sx, double sy, double sz) {
-        Matrix4f affineMatrix = getMatrix(sx, sy, sz);
+        Matrix4f affineMatrix = getMatrix(rx, ry, rz); // Note the change here to rx, ry, rz instead of sx, sy, sz
         // 3D Scale
-        affineMatrix.scale((float) sx, (float) sy, (float) sz);
+        affineMatrix.scale(convertDoubleToFloat(sx), convertDoubleToFloat(sy), convertDoubleToFloat(sz));
         return affineMatrix;
     }
 
-    // 计算旋转、缩放和枢轴点便宜的仿射矩阵
     public static Matrix4f getMatrix(double rx, double ry, double rz, double sx, double sy, double sz, double offset_x, double offset_y, double offset_z) {
-        Matrix4f affineMatrix = getMatrix(sx, sy, sz, rx, ry, rz);
+        Matrix4f affineMatrix = getMatrix(rx, ry, rz, sx, sy, sz);
         // 3D Translate
-        affineMatrix.translate((float) offset_x, (float) offset_y, (float) offset_z);
+        affineMatrix.translate(convertDoubleToFloat(offset_x), convertDoubleToFloat(offset_y), convertDoubleToFloat(offset_z));
         return affineMatrix;
+    }
+
+    private static float convertDoubleToFloat(double value) {
+        BigDecimal bigDecimalValue = new BigDecimal(value, MathContext.DECIMAL32); // Using a MathContext for 7 digits precision (similar to float)
+        return bigDecimalValue.floatValue();
     }
 
 }

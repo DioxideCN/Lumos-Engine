@@ -3,6 +3,7 @@ import de.undercouch.gradle.tasks.download.Download
 plugins {
     id 'java'
     id 'java-library'
+    id "io.freefair.lombok" version "6.3.0"
     id "de.undercouch.download" version "5.0.1"
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
@@ -19,6 +20,110 @@ ext {
 def buildToolsJar = new File(buildDir, "BuildTools.jar")
 def buildToolsDir = new File(buildDir, "buildtools")
 def spigotJar = new File(buildToolsDir, "spigot-${spigotVersion}.jar")
+def outputShadeJar = new File(buildDir, "libs/LumosEngine-${version}-all.jar")
+def specialSourceJar = new File(buildDir, "SpecialSource.jar")
+def ssiJar = new File(buildDir, "specialsource/LumosEngine-${version}-all.jar")
+def ssobfJar = new File(buildDir, "specialsource/LumosEngine-${version}-rmo.jar")
+def ssJar = new File(buildDir, "specialsource/LumosEngine-${version}-rma.jar")
+def specialSourceFolder = new File(buildDir, "specialsource")
+def homePath = System.properties['user.home']
+def m2 = new File(homePath + "/.m2/repository")
+def m2s = m2.getAbsolutePath()
+
+dependencies {
+    implementation project(":Lumos-Spigot")
+    implementation project(":Lumos-Common")
+//    implementation project(":Lumos-Web")
+}
+
+// ****** 混淆构建
+
+// 下载SpecialSource
+tasks.register('downloadSpecialSource', Download) {
+    group 'setup'
+    src "https://repo.maven.apache.org/maven2/net/md-5/SpecialSource/1.11.0/SpecialSource-1.11.0-shaded.jar"
+    dest specialSourceJar
+    onlyIf { !specialSourceJar.exists() }
+}
+
+tasks.register('copyBuildToSpecialSource', Copy) {
+    group "remapping"
+    from outputShadeJar
+    into specialSourceFolder
+    dependsOn(downloadSpecialSource, shadowJar)
+}
+
+// ssiJar和ssobfJar进行混淆
+tasks.register('specialSourceRemapObfuscate', JavaExec) {
+    group 'remapping'
+    dependsOn(copyBuildToSpecialSource, downloadSpecialSource, shadowJar)
+    workingDir = specialSourceFolder
+    classpath = files(specialSourceJar,
+            new File("${m2s}/org/spigotmc/spigot/${spigotVersion}/spigot-${spigotVersion}-remapped-mojang.jar"))
+    mainClass = "net.md_5.specialsource.SpecialSource"
+    args = [
+            "--live",
+            "-i",
+            ssiJar.getName(),
+            "-o",
+            ssobfJar.getName(),
+            "-m",
+            "${m2s}/org/spigotmc/minecraft-server/${spigotVersion}/minecraft-server-${spigotVersion}-maps-mojang.txt",
+            "--reverse",
+    ]
+}
+
+// ssobfJar和ssJar进行混淆
+tasks.register('specialSourceRemap', JavaExec) {
+    group 'remapping'
+    dependsOn(specialSourceRemapObfuscate)
+    workingDir = specialSourceFolder
+    classpath = files(specialSourceJar,
+            new File("${m2s}/org/spigotmc/spigot/${spigotVersion}/spigot-${spigotVersion}-remapped-obf.jar"))
+    mainClass = "net.md_5.specialsource.SpecialSource"
+    args = [
+            "--live",
+            "-i",
+            ssobfJar.getName(),
+            "-o",
+            ssJar.getName(),
+            "-m",
+            "${m2s}/org/spigotmc/minecraft-server/${spigotVersion}/minecraft-server-${spigotVersion}-maps-spigot.csrg"
+    ]
+}
+
+// 将最终的ssJar拷贝到外部并重命名
+tasks.register('lumos', Copy) {
+    group "lumos"
+    from ssJar
+    into buildDir
+    rename { String fileName ->
+        fileName.replace('LumosEngine-' + version + '-rma.jar', "LumosEngine-" + version + ".jar")
+    }
+    dependsOn(specialSourceRemap)
+}
+
+// ****** shadowJar Task
+
+shadowJar {
+    append("plugin.yml")
+    dependencies {
+        exclude(dependency('org.jetbrains:annotations'))
+        exclude(dependency('org.jetbrains.kotlin:kotlin-stdlib-common'))
+        exclude(dependency('org.jetbrains.kotlin:kotlin-stdlib'))
+        exclude(dependency('com.google.code.gson:gson:2.10'))
+        exclude(dependency('com.google.protobuf:protobuf-java'))
+        exclude(dependency('com.mysql:mysql-connector-j:8.0.33'))
+        exclude(dependency('org.mybatis:mybatis:3.5.13'))
+        exclude(dependency('com.zaxxer:HikariCP:5.0.1'))
+    }
+
+    archiveBaseName.set("LumosEngine")
+    archiveVersion.set("${project.version}")
+    archiveClassifier.set('all')
+}
+
+// ****** 构建辅助性BuildTools
 
 // 下载BuildTools
 task downloadBuildTools(type: Download) {
@@ -29,14 +134,15 @@ task downloadBuildTools(type: Download) {
 }
 
 // 构建BuildTools
-task buildSpigot(type: JavaExec, dependsOn: downloadBuildTools) {
+tasks.register('buildSpigot', JavaExec) {
+    dependsOn downloadBuildTools
     group 'setup'
     classpath = files(buildToolsJar)
     args = [
             "--rev",
             "1.20.1",
             "--compile",
-            "spigot",
+            "craftbukkit",
             "--remap"
     ]
     workingDir = buildToolsDir
@@ -45,6 +151,8 @@ task buildSpigot(type: JavaExec, dependsOn: downloadBuildTools) {
     }
     onlyIf { !spigotJar.exists() }
 }
+
+// ****** all project
 
 allprojects {
     apply plugin: 'java'
@@ -70,16 +178,9 @@ allprojects {
         maven { url 'https://repo.dmulloy2.net/repository/public/' }
         mavenLocal()
     }
-}
-
-subprojects {
-    configurations.all {
-        resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds' // Do not cache dynamic versions
-    }
 
     dependencies {
         compileOnly "org.spigotmc:spigot-api:${spigotVersion}"
-        compileOnly "org.spigotmc:spigot:${spigotVersion}:remapped-mojang"
         compileOnly "org.spigotmc:minecraft-server:${spigotVersion}"
         compileOnly "org.bukkit:craftbukkit:${spigotVersion}:remapped-mojang"
         compileOnly "org.jetbrains:annotations:$annotationVersion"
@@ -92,14 +193,26 @@ subprojects {
     shadowJar {
         append("plugin.yml")
     }
+}
 
+// ****** children project
+
+subprojects {
+    configurations.configureEach {
+        resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds' // Do not cache dynamic versions
+    }
     artifacts {
         archives shadowJar
     }
-
     tasks.test {
         useJUnitPlatform()
     }
+}
+
+// ****** other
+
+compileJava {
+    options.compilerArgs << '-parameters'
 }
 
 java {

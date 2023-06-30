@@ -8,8 +8,12 @@ import com.alibaba.fastjson2.JSON;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.eclipse.jetty.http.HttpStatus;
 
 import java.io.IOException;
@@ -26,6 +30,8 @@ public class PlayerApiService extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        // 设置响应内容类型为 JSON
+        resp.setContentType("application/json");
         // 获取请求路径信息
         String pathInfo = req.getPathInfo();
         // 检查路径信息是否存在
@@ -40,8 +46,6 @@ public class PlayerApiService extends HttpServlet {
         Player onlinePlayer = Bukkit.getPlayer(playerName);
         // 检查玩家是否在线
         if (onlinePlayer != null) {
-            // 设置响应内容类型为 JSON
-            resp.setContentType("application/json");
             // 发送响应
             StaticPlayer converter = StaticPlayer.convert(onlinePlayer, true);
             resp.getWriter().write(JSON.toJSONString(converter));
@@ -50,8 +54,6 @@ public class PlayerApiService extends HttpServlet {
             StaticPlayer staticPlayer = playerMapper.select(playerName);
             // 检查离线玩家是否存在
             if (staticPlayer != null) {
-                // 设置响应内容类型为 JSON
-                resp.setContentType("application/json");
                 // 发送响应
                 resp.getWriter().write(JSON.toJSONString(staticPlayer));
             } else {

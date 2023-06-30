@@ -4,6 +4,7 @@ import cn.dioxide.common.annotation.Event;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,6 +29,32 @@ public class ForbidEndGateFeature implements Listener {
         if (event.getEntity().getLocation().getBlock().getType() == Material.NETHER_PORTAL) {
             return;
         }
+        // 放行刷沙机
+        // 检查是否是FallingBlock且是沙子或砂砾
+        if (event.getEntity() instanceof FallingBlock fallingBlock) {
+            Material material = fallingBlock.getBlockData().getMaterial();
+            if (material == Material.SAND ||
+                    material == Material.GRAVEL ||
+                    material == Material.WHITE_CONCRETE_POWDER ||
+                    material == Material.ORANGE_CONCRETE_POWDER ||
+                    material == Material.MAGENTA_CONCRETE_POWDER ||
+                    material == Material.LIGHT_BLUE_CONCRETE_POWDER ||
+                    material == Material.YELLOW_CONCRETE_POWDER ||
+                    material == Material.LIME_CONCRETE_POWDER ||
+                    material == Material.PINK_CONCRETE_POWDER ||
+                    material == Material.GRAY_CONCRETE_POWDER ||
+                    material == Material.LIGHT_GRAY_CONCRETE_POWDER ||
+                    material == Material.CYAN_CONCRETE_POWDER ||
+                    material == Material.PURPLE_CONCRETE_POWDER ||
+                    material == Material.BLUE_CONCRETE_POWDER ||
+                    material == Material.BROWN_CONCRETE_POWDER ||
+                    material == Material.GREEN_CONCRETE_POWDER ||
+                    material == Material.RED_CONCRETE_POWDER ||
+                    material == Material.BLACK_CONCRETE_POWDER
+            ) {
+                return;
+            }
+        }
         // 阻止非玩家实体通过末地门
         event.setCancelled(true);
     }
@@ -47,10 +74,10 @@ public class ForbidEndGateFeature implements Listener {
                 }
 
                 // Check if the world is Nether and within restricted height range
-                if (world.getEnvironment() == World.Environment.NETHER && ((y >= -1 && y <= 32) || (y >= 164 && y <= 200))) {
-                    // Cancel the spawning
-                    event.setCancelled(true);
-                }
+//                if (world.getEnvironment() == World.Environment.NETHER && ((y >= -1 && y <= 32) || (y >= 164 && y <= 200))) {
+//                    // Cancel the spawning
+//                    event.setCancelled(true);
+//                }
             }
         }
     }

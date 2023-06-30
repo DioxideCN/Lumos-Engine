@@ -12,7 +12,6 @@ libraries:
   - "com.zaxxer:HikariCP:5.0.1"
   - "org.mybatis:mybatis:3.5.13"
   - "com.mysql:mysql-connector-j:8.0.33"
-  - "com.google.code.gson:gson:2.10"
   - "com.alibaba.fastjson2:fastjson2:2.0.34"
 commands:
   lumos:

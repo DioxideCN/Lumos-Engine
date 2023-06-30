@@ -110,7 +110,7 @@ public class ProbabilityDropEvent implements Listener {
         } else {
             return true;
         }
-        return Math.random() < probability - 0.2;
+        return Math.random() < probability;
     }
 
 }

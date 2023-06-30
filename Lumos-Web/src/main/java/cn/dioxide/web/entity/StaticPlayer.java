@@ -6,10 +6,14 @@ import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.minecraft.nbt.CompoundTag;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -106,7 +110,16 @@ public class StaticPlayer {
                 equipmentJson);
     }
 
-    private StaticPlayer(boolean isOnline, String name, String uuid, Integer level, String world, Double x, Double y, Double z, @Nullable String inv, @Nullable String equip) {
+    private StaticPlayer(boolean isOnline,
+                         String name,
+                         String uuid,
+                         Integer level,
+                         String world,
+                         Double x,
+                         Double y,
+                         Double z,
+                         @Nullable String inv,
+                         @Nullable String equip) {
         this.isOnline = isOnline;
         this.name = name;
         this.uuid = uuid;
