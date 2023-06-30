@@ -1,20 +1,19 @@
 package cn.dioxide.web.entity;
 
-import cn.dioxide.web.config.ItemStackSerializer;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.annotation.JSONField;
+import cn.dioxide.common.extension.Pair;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.minecraft.nbt.CompoundTag;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Method;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Dioxide.CN
@@ -23,7 +22,6 @@ import java.util.List;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class StaticPlayer {
 
     /**
@@ -47,7 +45,7 @@ public class StaticPlayer {
     private Integer level;
 
     /**
-     * 下线时的世界
+     * 所在的世界
      */
     private String world;
 
@@ -74,29 +72,26 @@ public class StaticPlayer {
     /**
      * 背包
      */
-    @JSONField(serialize = false)
-    private @Nullable String inv;
-
-    private @Nullable List<ItemStackSerializer> inventory;
+    private @NotNull List<CompoundTag> inventory;
+    private @NotNull String inv;
 
     /**
      * 装备
      */
-    @JSONField(serialize = false)
-    private @Nullable String equip;
-
-    private @Nullable List<ItemStackSerializer> equipments;
+    private @NotNull List<CompoundTag> equipment;
+    private @NotNull String equip;
 
     public static StaticPlayer convert(Player player, boolean isOnline) {
         Location location = player.getLocation();
         // Get the player's inventory data
-        List<ItemStackSerializer> inventory = ItemStackSerializer.convert(player.getInventory().getContents());
-        List<ItemStackSerializer> equipment = ItemStackSerializer.convert(player.getInventory().getArmorContents());
-
-        // Serialize the inventory data
-        String inventoryJson = JSON.toJSONString(inventory);
-        String equipmentJson = JSON.toJSONString(equipment);
-
+        List<CompoundTag> inventory = Arrays
+                .stream(player.getInventory().getContents())
+                .map(StaticPlayer::getItemNBTAsJson)
+                .toList();
+        List<CompoundTag> equipment = Arrays
+                .stream(player.getInventory().getArmorContents())
+                .map(StaticPlayer::getItemNBTAsJson)
+                .toList();
         return new StaticPlayer(
                 isOnline,
                 player.getName(),
@@ -106,8 +101,8 @@ public class StaticPlayer {
                 location.getX(),
                 location.getY(),
                 location.getZ(),
-                inventoryJson,
-                equipmentJson);
+                inventory,
+                equipment);
     }
 
     private StaticPlayer(boolean isOnline,
@@ -118,8 +113,8 @@ public class StaticPlayer {
                          Double x,
                          Double y,
                          Double z,
-                         @Nullable String inv,
-                         @Nullable String equip) {
+                         @NotNull List<CompoundTag> inventory,
+                         @NotNull List<CompoundTag> equipment) {
         this.isOnline = isOnline;
         this.name = name;
         this.uuid = uuid;
@@ -128,28 +123,63 @@ public class StaticPlayer {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.inv = inv;
-        this.equip = equip;
+        this.inventory = inventory;
+        this.equipment = equipment;
 
-        if (this.inv != null) {
-            this.inventory = JSON.parseArray(this.inv, ItemStackSerializer.class);
-        }
-        if (this.equip != null) {
-            this.equipments = JSON.parseArray(this.equip, ItemStackSerializer.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Pair<List<String>, List<String>> iePair = compoundTagToJSON(inventory, equipment);
+        try {
+            this.inv =objectMapper.writeValueAsString(iePair.left());
+            this.equip =objectMapper.writeValueAsString(iePair.right());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public void setInv(@Nullable String inv) {
-        this.inv = inv;
-        if (this.inv != null) {
-            this.inventory = JSON.parseArray(this.inv, ItemStackSerializer.class);
+    private static CompoundTag getItemNBTAsJson(ItemStack itemStack) {
+        net.minecraft.world.item.ItemStack nmsCopy = CraftItemStack.asNMSCopy(itemStack);
+        return nmsCopy.save(new CompoundTag());
+    }
+
+    public String toJSONString() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Pair<List<String>, List<String>> iePair = compoundTagToJSON(inventory, equipment);
+        // 创建一个包含所有字段的 map
+        Map<String, Object> map = new HashMap<>();
+        map.put("isOnline", isOnline);
+        map.put("name", name);
+        map.put("uuid", uuid);
+        map.put("level", level);
+        map.put("world", world);
+        map.put("x", x);
+        map.put("y", y);
+        map.put("z", z);
+        map.put("qq", qq);
+        map.put("inventory", iePair.left());
+        map.put("equipment", iePair.right());
+        // 将 map 序列化为 JSON 字符串
+        try {
+            return objectMapper.writeValueAsString(map);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
-    public void setEquip(@Nullable String equip) {
-        this.equip = equip;
-        if (this.equip != null) {
-            this.equipments = JSON.parseArray(this.equip, ItemStackSerializer.class);
+    private static Pair<List<String>, List<String>> compoundTagToJSON(
+            List<CompoundTag> inventory,
+            List<CompoundTag> equipment) {
+        // 将 NBT tags 转换为它们的字符串表示
+        List<String> inventoryStrings;
+        inventoryStrings = new ArrayList<>();
+        for (CompoundTag tag : inventory) {
+            inventoryStrings.add(tag.toString());
         }
+        List<String> equipmentStrings;
+        equipmentStrings = new ArrayList<>();
+        for (CompoundTag tag : equipment) {
+            equipmentStrings.add(tag.toString());
+        }
+        return Pair.of(inventoryStrings, equipmentStrings);
     }
 }

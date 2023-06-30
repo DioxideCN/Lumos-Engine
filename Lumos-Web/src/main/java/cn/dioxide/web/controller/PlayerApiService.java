@@ -4,16 +4,11 @@ import cn.dioxide.web.annotation.ServletMapping;
 import cn.dioxide.web.config.MapperConfig;
 import cn.dioxide.web.entity.StaticPlayer;
 import cn.dioxide.web.mapper.PlayerMapper;
-import com.alibaba.fastjson2.JSON;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.eclipse.jetty.http.HttpStatus;
 
 import java.io.IOException;
@@ -43,19 +38,19 @@ public class PlayerApiService extends HttpServlet {
         // 从路径信息中获取玩家名称
         String playerName = pathInfo.substring(1);
         // 尝试获取在线玩家
-        Player onlinePlayer = Bukkit.getPlayer(playerName);
+        Player player = Bukkit.getPlayer(playerName);
         // 检查玩家是否在线
-        if (onlinePlayer != null) {
+        if (player != null) {
             // 发送响应
-            StaticPlayer converter = StaticPlayer.convert(onlinePlayer, true);
-            resp.getWriter().write(JSON.toJSONString(converter));
+            StaticPlayer onlinePlayer = StaticPlayer.convert(player, true);
+            resp.getWriter().write(onlinePlayer.toJSONString());
         } else {
             // 尝试获取离线玩家
-            StaticPlayer staticPlayer = playerMapper.select(playerName);
+            StaticPlayer offlinePlayer = playerMapper.select(playerName);
             // 检查离线玩家是否存在
-            if (staticPlayer != null) {
+            if (offlinePlayer != null) {
                 // 发送响应
-                resp.getWriter().write(JSON.toJSONString(staticPlayer));
+                resp.getWriter().write(offlinePlayer.toJSONString());
             } else {
                 resp.setStatus(HttpStatus.NOT_FOUND_404);
                 resp.getWriter().write("{\"error\": \"Player not found\"}");

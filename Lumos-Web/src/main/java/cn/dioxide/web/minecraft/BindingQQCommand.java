@@ -21,7 +21,7 @@ public class BindingQQCommand {
         // 验证QQ号码格式
         String regex = "[1-9][0-9]{4,10}";
         if (!qq.matches(regex)) {
-            Format.use().player().noticePrefix(player, "&c你的QQ账号有点儿离谱");
+            Format.use().player().noticePrefix(player, "&c你的QQ账号不符合规范");
             return false;
         }
         // 检查QQ是否已绑定
