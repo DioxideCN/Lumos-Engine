@@ -2,8 +2,10 @@ package cn.dioxide.web.entity;
 
 import cn.dioxide.common.extension.Pair;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.minecraft.nbt.CompoundTag;
 import org.bukkit.Location;
@@ -22,6 +24,7 @@ import java.util.*;
  */
 @Getter
 @Setter
+@NoArgsConstructor(force = true)
 public class StaticPlayer {
 
     /**
@@ -72,13 +75,13 @@ public class StaticPlayer {
     /**
      * 背包
      */
-    private @NotNull List<CompoundTag> inventory;
+    private @Nullable List<CompoundTag> inventory;
     private @NotNull String inv;
 
     /**
      * 装备
      */
-    private @NotNull List<CompoundTag> equipment;
+    private @Nullable List<CompoundTag> equipment;
     private @NotNull String equip;
 
     public static StaticPlayer convert(Player player, boolean isOnline) {
@@ -105,6 +108,19 @@ public class StaticPlayer {
                 equipment);
     }
 
+    private StaticPlayer(String name,
+                         String uuid,
+                         Integer level,
+                         String world,
+                         Double x,
+                         Double y,
+                         Double z,
+                         String inv,
+                         String equip) {
+        // inv -> inventory equip -> equipment
+        this(false, name, uuid, level, world, x, y, z, null, null);
+    }
+
     private StaticPlayer(boolean isOnline,
                          String name,
                          String uuid,
@@ -113,8 +129,8 @@ public class StaticPlayer {
                          Double x,
                          Double y,
                          Double z,
-                         @NotNull List<CompoundTag> inventory,
-                         @NotNull List<CompoundTag> equipment) {
+                         @Nullable List<CompoundTag> inventory,
+                         @Nullable List<CompoundTag> equipment) {
         this.isOnline = isOnline;
         this.name = name;
         this.uuid = uuid;
@@ -126,11 +142,12 @@ public class StaticPlayer {
         this.inventory = inventory;
         this.equipment = equipment;
 
+        if (inventory == null || equipment == null) return;
         ObjectMapper objectMapper = new ObjectMapper();
         Pair<List<String>, List<String>> iePair = compoundTagToJSON(inventory, equipment);
         try {
-            this.inv =objectMapper.writeValueAsString(iePair.left());
-            this.equip =objectMapper.writeValueAsString(iePair.right());
+            this.inv = objectMapper.writeValueAsString(iePair.left());
+            this.equip = objectMapper.writeValueAsString(iePair.right());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -143,7 +160,6 @@ public class StaticPlayer {
 
     public String toJSONString() {
         ObjectMapper objectMapper = new ObjectMapper();
-        Pair<List<String>, List<String>> iePair = compoundTagToJSON(inventory, equipment);
         // 创建一个包含所有字段的 map
         Map<String, Object> map = new HashMap<>();
         map.put("isOnline", isOnline);
@@ -155,20 +171,30 @@ public class StaticPlayer {
         map.put("y", y);
         map.put("z", z);
         map.put("qq", qq);
-        map.put("inventory", iePair.left());
-        map.put("equipment", iePair.right());
-        // 将 map 序列化为 JSON 字符串
         try {
+            if (this.inventory == null || this.equipment == null) {
+                // 将 JSON 字符串转换为 JsonNode
+                JsonNode invJsonNode = objectMapper.readTree(inv);
+                JsonNode equipJsonNode = objectMapper.readTree(equip);
+                // 将 JsonNode 放入 map
+                map.put("inventory", invJsonNode);
+                map.put("equipment", equipJsonNode);
+            } else {
+                Pair<List<String>, List<String>> iePair = compoundTagToJSON(inventory, equipment);
+                map.put("inventory", iePair.left());
+                map.put("equipment", iePair.right());
+            }
+            // 将 map 序列化为 JSON 字符串
             return objectMapper.writeValueAsString(map);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
     private static Pair<List<String>, List<String>> compoundTagToJSON(
-            List<CompoundTag> inventory,
-            List<CompoundTag> equipment) {
+            @NotNull List<CompoundTag> inventory,
+            @NotNull List<CompoundTag> equipment) {
         // 将 NBT tags 转换为它们的字符串表示
         List<String> inventoryStrings;
         inventoryStrings = new ArrayList<>();

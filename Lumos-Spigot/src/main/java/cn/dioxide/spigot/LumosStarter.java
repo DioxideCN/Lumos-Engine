@@ -6,6 +6,8 @@ import cn.dioxide.common.extension.BeanHolder;
 import cn.dioxide.common.extension.Config;
 import cn.dioxide.common.extension.Format;
 import cn.dioxide.web.infra.LocalWebEngine;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -17,6 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class LumosStarter extends JavaPlugin {
 
     public static LumosStarter INSTANCE;
+    public static Plugin PAPI_INSTANCE;
 
     @Override
     public void onEnable() {
@@ -26,6 +29,13 @@ public class LumosStarter extends JavaPlugin {
         BeanHolder.init(this);
         if (ApplicationConfig.use().enable) {
             LocalWebEngine.init(this);
+        }
+
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
+            // PlaceholderAPI 不可用
+            Bukkit.getPluginManager().disablePlugin(this);
+        } else {
+            PAPI_INSTANCE = Bukkit.getPluginManager().getPlugin("PlaceholderAPI");
         }
     }
 

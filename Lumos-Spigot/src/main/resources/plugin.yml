@@ -5,6 +5,7 @@ api-version: '1.20'
 api: '1.20'
 prefix: 'LumosEngine'
 authors: [ Dioxide_CN ]
+depend: [ PlaceholderAPI ]
 description: 'Create infinite possibilities.'
 libraries:
   - "org.eclipse.jetty:jetty-server:11.0.14"

@@ -24,17 +24,19 @@ public class PlayerDataStoreEvent implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         if (ApplicationConfig.use().enable) {
-            ObjectMapper objectMapper = new ObjectMapper();
             Player player = e.getPlayer();
             // 从数据库中获取
+            System.out.println(player.getName());
             StaticPlayer dbPlayer = playerMapper.select(player.getName());
-            StaticPlayer awaiter = StaticPlayer.convert(player, false);
+            System.out.println(dbPlayer);
             if (dbPlayer == null) {
                 // 是新数据 存入
-                playerMapper.insert(awaiter);
+                dbPlayer = StaticPlayer.convert(player, false);
+                playerMapper.insert(dbPlayer);
             } else {
                 // 不是新数据 更新
-                playerMapper.update(awaiter);
+                dbPlayer = StaticPlayer.convert(player, false);
+                playerMapper.update(dbPlayer);
             }
             MapperConfig.use().commit();
         }

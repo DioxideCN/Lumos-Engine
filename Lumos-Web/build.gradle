@@ -10,9 +10,9 @@ repositories {
 
 dependencies {
     compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    compileOnly 'io.github.dreamvoid:MiraiMC-Integration:1.7'
 
     implementation project(":Lumos-Common")
-
     implementation 'org.eclipse.jetty:jetty-server:11.0.14'
     implementation 'org.eclipse.jetty:jetty-servlet:11.0.14'
     implementation 'com.zaxxer:HikariCP:5.0.1'

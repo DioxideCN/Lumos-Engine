@@ -36,6 +36,7 @@ public class Config {
     public final WhiteList whiteList;
     public final Feature feature;
     public final Display display;
+    public final Robot robot;
 
     public static void init(JavaPlugin plugin, boolean showLog) {
         try {
@@ -78,6 +79,10 @@ public class Config {
 
         // configuration
         this.version = configs[0].getInt("version", 1);
+
+        this.robot = new Robot();
+        this.robot.owner = configs[0].getLongList("robot.owner");
+        this.robot.group = configs[0].getLongList("robot.group");
 
         this.feature = new Feature();
         this.feature.protectTerrain = configs[0].getBoolean("feature.protect-terrain", true);
@@ -265,6 +270,11 @@ public class Config {
         FEATURE_KEY_MAP.put("feature.stupid-villager", config.feature.stupidVillager);
         FEATURE_KEY_MAP.put("feature.minecart.enable", config.feature.minecartSpeedEnable);
         FEATURE_KEY_MAP.put("feature.enable-whitelist", config.feature.enableWhitelist);
+    }
+
+    public static class Robot {
+        public List<Long> owner;
+        public List<Long> group;
     }
 
     public static class Feature {

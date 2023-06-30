@@ -176,6 +176,7 @@ allprojects {
         maven { url 'https://oss.sonatype.org/content/groups/public/' }
         maven { url 'https://repo.codemc.org/repository/maven-public/' }
         maven { url 'https://repo.dmulloy2.net/repository/public/' }
+        maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
         mavenLocal()
     }
 
@@ -184,6 +185,7 @@ allprojects {
         compileOnly "org.bukkit:craftbukkit:${spigotVersion}:remapped-mojang"
         compileOnly "org.jetbrains:annotations:$annotationVersion"
         compileOnly "org.projectlombok:lombok:$lombokVersion"
+        compileOnly 'me.clip:placeholderapi:2.11.3'
 
         testImplementation platform("org.junit:junit-bom:5.9.1")
         testImplementation "org.junit.jupiter:junit-jupiter"
