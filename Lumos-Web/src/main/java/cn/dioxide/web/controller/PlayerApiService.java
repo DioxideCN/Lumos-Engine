@@ -20,9 +20,7 @@ import java.io.IOException;
  */
 @ServletMapping("/api/player/*")
 public class PlayerApiService extends HttpServlet {
-
     PlayerMapper playerMapper = MapperConfig.use().getInstance(PlayerMapper.class);
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         // 设置响应内容类型为 JSON
@@ -57,5 +55,4 @@ public class PlayerApiService extends HttpServlet {
             }
         }
     }
-
 }

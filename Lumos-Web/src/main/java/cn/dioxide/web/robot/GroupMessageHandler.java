@@ -16,7 +16,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import me.dreamvoid.miraimc.bukkit.event.message.passive.MiraiGroupMessageEvent;
 
-import java.rmi.Remote;
 import java.util.*;
 
 /**
@@ -47,7 +46,7 @@ public class GroupMessageHandler implements Listener {
                         addToWhiteList(useGroup, e.getSenderID(), message);
                         return;
                     }
-                    if ("让我一丝不挂".equals(message)) {
+                    if ("我的信息".equals(message)) {
                         getPrivateInfo(useGroup, e.getSenderID(), e.getSenderName());
                         return;
                     }

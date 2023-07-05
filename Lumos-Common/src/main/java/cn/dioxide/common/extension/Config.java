@@ -95,6 +95,7 @@ public class Config {
         this.feature.wardenExplodeStrength = configs[0].getDouble("feature.minecart.explode-strength", 4.0D);
         this.feature.wardenDropChance = configs[0].getDouble("feature.minecart.drop-chance", 0.4D);
         this.feature.enableWhitelist = configs[0].getBoolean("feature.enable-whitelist", true);
+        this.feature.enableMaintain = configs[0].getBoolean("feature.enable-maintain", true);
 
         this.whiteList = new WhiteList();
         this.whiteList.kickMessage = configs[2].getString("kick_message", "&c你没有获得白名单,请联系服主获得。");
@@ -288,6 +289,7 @@ public class Config {
         public double wardenExplodeStrength;
         public double wardenDropChance;
         public boolean enableWhitelist;
+        public boolean enableMaintain;
     }
 
     public static class Display {

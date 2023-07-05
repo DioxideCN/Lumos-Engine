@@ -26,9 +26,7 @@ public class PlayerDataStoreEvent implements Listener {
         if (ApplicationConfig.use().enable) {
             Player player = e.getPlayer();
             // 从数据库中获取
-            System.out.println(player.getName());
             StaticPlayer dbPlayer = playerMapper.select(player.getName());
-            System.out.println(dbPlayer);
             if (dbPlayer == null) {
                 // 是新数据 存入
                 dbPlayer = StaticPlayer.convert(player, false);

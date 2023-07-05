@@ -24,6 +24,8 @@ feature:
   stupid-villager: true
   # 是否启用白名单
   enable-whitelist: true
+  # 是否启用维护模式
+  enable-maintain: true
   # 玩家乘坐矿车时功能
   minecart:
     # 是否启用

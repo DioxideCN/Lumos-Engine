@@ -25,6 +25,13 @@ public class WhiteListEvent implements Listener {
             e.allow();
             return;
         }
+        // 维护模式
+        if (Config.get().feature.enableMaintain) {
+            e.disallow(
+                    PlayerLoginEvent.Result.KICK_WHITELIST,
+                    ColorUtils.replace("&c服务器正在维护中，请耐心等待群内通知"));
+            return;
+        }
         // 其它的在白名单中拦截
         if (Config.get().whiteList.users.contains(player.getName())) {
             e.allow();
