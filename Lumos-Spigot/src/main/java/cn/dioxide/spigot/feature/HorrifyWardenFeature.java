@@ -143,8 +143,8 @@ public class HorrifyWardenFeature implements Listener {
                         handleWardenTrapped(warden);
                         evaporativeFluid(warden);
                         // 从这里开始恶心玩家
-                        wardenAngryAction(warden);
                         wardenAgitatedAction(warden);
+                        wardenAngryAction(warden);
                     }
                 }
             }
