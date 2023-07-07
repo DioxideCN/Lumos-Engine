@@ -18,8 +18,11 @@ commands:
   lumos:
     description: 'Get lumos engine total help'
     usage: "/lumos <module> <...args>"
+  custom:
+    description: 'Get custom help'
+    usage: "/custom <cmd> <...args>"
   display:
     description: 'Get display help'
     permission-message: "You don't have permission to use this command."
     permission: 'lumos.display.use'
-    usage: "/display <module> <...args>"
+    usage: "/display <cmd> <...args>"

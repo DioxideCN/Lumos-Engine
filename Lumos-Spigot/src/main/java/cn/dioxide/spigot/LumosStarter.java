@@ -5,6 +5,7 @@ import cn.dioxide.common.extension.ApplicationConfig;
 import cn.dioxide.common.extension.BeanHolder;
 import cn.dioxide.common.extension.Config;
 import cn.dioxide.common.extension.Format;
+import cn.dioxide.spigot.custom.CustomRegister;
 import cn.dioxide.web.infra.LocalWebEngine;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -24,11 +25,11 @@ public class LumosStarter extends JavaPlugin {
     @Override
     public void onEnable() {
         INSTANCE = this;
-        Format.init(this, "&7[&3&lLumos&b&lEngine&7]");
-        Config.init(this, true);
-        BeanHolder.init(this);
+        Format.init(this, "&7[&3&lLumos&b&lEngine&7]"); // 初始化Formatter工具
+        Config.init(this, true); // 加载配置类
+        BeanHolder.init(this); // 初始化Bean容器
         if (ApplicationConfig.use().enable) {
-            LocalWebEngine.init(this);
+            LocalWebEngine.init(this); // 初始化Jetty容器
         }
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
@@ -37,6 +38,8 @@ public class LumosStarter extends JavaPlugin {
         } else {
             PAPI_INSTANCE = Bukkit.getPluginManager().getPlugin("PlaceholderAPI");
         }
+
+        CustomRegister.init();
     }
 
     @Override

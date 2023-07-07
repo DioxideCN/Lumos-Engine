@@ -127,6 +127,10 @@ public class HorrifyWardenFeature implements Listener {
             location.getWorld().createExplosion(location, 10.0F, false, true);
             generateSculkShrieker(location);
             createRewardChest(warden, location);
+            // 清除任务
+            wardenCheckStartTime.remove(warden.getUniqueId());
+            isWardenConsistentlyTrapped.remove(warden.getUniqueId());
+            wardenAgitatedTaskIDs.remove(warden.getUniqueId());
         }
     }
 
@@ -265,7 +269,7 @@ public class HorrifyWardenFeature implements Listener {
                         false));
                 splitWarden(warden);
                 wardenLifeRecovery(warden);
-            }, 0L, 360L);
+            }, 0L, 480L);
             wardenAngryTaskIDs.put(warden.getUniqueId(), taskID);
         } else if (warden.getAngerLevel() != Warden.AngerLevel.ANGRY && wardenAngryTaskIDs.containsKey(warden.getUniqueId())) {
             // Warden is no longer angry, cancel the task
@@ -283,11 +287,11 @@ public class HorrifyWardenFeature implements Listener {
             for (Entity nearbyEntity : warden.getNearbyEntities(16, 16, 16)) {
                 if (nearbyEntity instanceof Warden slaveWarden
                         && slaveWarden.getScoreboardTags().contains("warden.slave")
-                        && slaveWarden.getHealth() > 80) {
+                        && slaveWarden.getHealth() > 160) {
                     // 抽取25%的生命值
-                    double amountToTransfer = slaveWarden.getHealth() * 0.4;
-                    if (slaveWarden.getHealth() - amountToTransfer < 80) {
-                        amountToTransfer = slaveWarden.getHealth() - 80;
+                    double amountToTransfer = 50.0D;
+                    if (slaveWarden.getHealth() - amountToTransfer < 160) {
+                        amountToTransfer = slaveWarden.getHealth() - 160;
                     }
                     slaveWarden.setHealth(slaveWarden.getHealth() - amountToTransfer);
                     warden.setHealth(warden.getHealth() + amountToTransfer);
@@ -299,7 +303,7 @@ public class HorrifyWardenFeature implements Listener {
     }
 
     /**
-     * 处于愤怒的监守者会每20秒尝试生成一个分裂体，分裂体是普通的监守者不会具有监守者本体的能力，但同样会免疫一些伤害和不合理事件
+     * 处于愤怒的监守者会每24秒尝试生成一个分裂体，分裂体是普通的监守者不会具有监守者本体的能力，但同样会免疫一些伤害和不合理事件
      */
     public static void splitWarden(Warden warden) {
         if (warden.getScoreboardTags().contains("warden.slave")) return;
@@ -316,8 +320,7 @@ public class HorrifyWardenFeature implements Listener {
                     }
                 }
             }
-            if ((nearbyPlayersCount > 2 && nearbySlaveWardensCount < 3) ||
-                    (nearbyPlayersCount == 1 && nearbySlaveWardensCount == 0)) {
+            if (nearbySlaveWardensCount == 0) {
                 splitWardenAction(warden);
             }
         }
@@ -456,16 +459,19 @@ public class HorrifyWardenFeature implements Listener {
      */
     private static void teleportWardenNearPlayer(Warden warden, Player player) {
         Location playerLocation = player.getLocation();
-        Random random = new Random();
 
+        Random random = new Random();
         for (int attempts = 0; attempts < 10; attempts++) {
             double angle = random.nextDouble() * 2 * Math.PI;
             double dx = Math.cos(angle) * 5;
             double dz = Math.sin(angle) * 5;
             Location targetLocation = playerLocation.clone().add(dx, 0, dz);
             if (isSafeLocation(targetLocation)) {
-                warden.teleport(targetLocation);
-                return;
+                double distance = targetLocation.distance(playerLocation);
+                if (distance <= 8) {
+                    warden.teleport(targetLocation);
+                    return;
+                }
             }
         }
     }

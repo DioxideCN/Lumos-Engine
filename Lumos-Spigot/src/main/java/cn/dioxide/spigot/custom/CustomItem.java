@@ -6,16 +6,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -29,16 +30,19 @@ import java.util.stream.Collectors;
  */
 public class CustomItem {
 
-    private @NotNull ItemStack item;
-    private @NotNull final ItemMeta meta;
+    private ItemStack item;
+    private ItemMeta meta;
 
     private CustomItem(Material material) {
         this.item = new ItemStack(material);
-        // 确保meta不为null
-        if (item.hasItemMeta()) {
-            this.meta = Objects.requireNonNull(this.item.getItemMeta());
-        } else {
-            throw new NullPointerException("Material " + material + " must has a meta");
+        // 获取或创建物品的元数据
+        this.meta = this.item.getItemMeta();
+        if (this.meta == null) {
+            this.meta = Bukkit.getItemFactory().getItemMeta(material);
+            if (this.meta == null) {
+                throw new NullPointerException("Failed to create ItemMeta for material " + material);
+            }
+            this.item.setItemMeta(this.meta);
         }
     }
 
@@ -64,26 +68,36 @@ public class CustomItem {
         return this;
     }
 
+    public CustomItem attribute(@NotNull String name, double amount, @NotNull AttributeModifier.Operation operation, @Nullable EquipmentSlot slot, @NotNull Attribute attribute) {
+        meta.addAttributeModifier(attribute, new AttributeModifier(
+                UUID.randomUUID(),
+                name,
+                amount,
+                operation,
+                slot));
+        return this;
+    }
+
+    @Deprecated
     @Unsafe(proposer = "Dioxide_CN")
     public CustomItem glow() {
         // glow光效在spigot-api中并没有显示的方法 所以只能使用NMS来合并NBT
         net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
-        // Compound是一个可能为空的值对象 这里使用Optional来处理NPE
-        CompoundTag tag = Optional.ofNullable(nmsItem.getTag()).orElse(new CompoundTag());
         // 预备合并的CompoundTag
-        CompoundTag ench = new CompoundTag(), merge = new CompoundTag();
-        merge.putShort("id", (short) -1);
-        merge.putShort("lvl", (short) 0);
-        ench.put("ench", merge);
-        // 原生tag与enchTag进行合并并代回nmsItem
-        tag.merge(ench);
-        nmsItem.setTag(tag);
+        CompoundTag merge = new CompoundTag() {{
+            putShort("id", (short) -1);
+            putShort("lvl", (short) 0);
+        }}, ench = new CompoundTag() {{
+            put("ench", merge);
+        }};
+        // Compound是一个可能为空的值对象 这里使用Optional来处理NPE
+        nmsItem.setTag(
+                Optional.ofNullable(nmsItem.getTag())
+                        .orElse(new CompoundTag())
+                        // 原生tag与enchTag进行合并并代回nmsItem
+                        .merge(ench));
         // 将NMS物品转换回CraftBukkit可识别物品
         this.item = CraftItemStack.asBukkitCopy(nmsItem);
-        return this;
-    }
-
-    public CustomItem recipe() {
         return this;
     }
 
