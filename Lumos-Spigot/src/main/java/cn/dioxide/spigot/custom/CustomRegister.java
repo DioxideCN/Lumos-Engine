@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class CustomRegister {
 
-    private static final HashMap<String, ItemStack> itemMap = new HashMap<>(200);
+    private static final HashMap<String, CustomItem> itemMap = new HashMap<>(200);
 
     public static void init() {
         // 使用之前的BeanHolder对@Custom自动注入到注册表
@@ -38,7 +38,7 @@ public class CustomRegister {
                     String key = custom.value();
                     Field itemField = clazz.getDeclaredField("item");
                     itemField.setAccessible(true);
-                    ItemStack item = (ItemStack) itemField.get(null);
+                    CustomItem item = (CustomItem) itemField.get(null);
                     // 将物品自动注册到HashMap中
                     itemMap.put(key, item);
                     // 尝试注册Recipe解析@Recipe注解
@@ -68,7 +68,7 @@ public class CustomRegister {
     }
 
     public static ItemStack get(String key) {
-        return itemMap.get(key);
+        return itemMap.get(key).build();
     }
 
     public static List<String> getKeySet() {

@@ -1,11 +1,9 @@
 package cn.dioxide.web.infra;
 
 import cn.dioxide.common.extension.ApplicationConfig;
-import cn.dioxide.common.extension.Config;
 import cn.dioxide.common.extension.Format;
 import cn.dioxide.common.extension.ReflectFactory;
 import cn.dioxide.web.annotation.ServletMapping;
-import com.mojang.datafixers.kinds.App;
 import jakarta.servlet.http.HttpServlet;
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;

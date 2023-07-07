@@ -6,7 +6,6 @@ import cn.dioxide.spigot.LumosStarter;
 import cn.dioxide.spigot.custom.CustomItem;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 
 /**
@@ -17,15 +16,14 @@ import org.bukkit.inventory.ShapedRecipe;
 @Custom("simple_end_powder")
 public class SimpleEndPowder {
 
-    private static final ItemStack item = CustomItem.with(Material.GRAY_DYE)
+    private static final CustomItem item = CustomItem.with(Material.GRAY_DYE)
             .name("&f简易末影粉尘")
-            .lore("&7&o合成物 锻造物")
-            .build();
+            .lore("&7&o合成物 锻造物");
 
     @Recipe
     public static ShapedRecipe registerCustomRecipe() {
         NamespacedKey key = new NamespacedKey(LumosStarter.INSTANCE, "simple_end_powder");
-        ShapedRecipe recipe = new ShapedRecipe(key, item);
+        ShapedRecipe recipe = new ShapedRecipe(key, item.build());
         recipe.shape(" A ", "BBC", " D ");
         recipe.setIngredient('A', Material.ELYTRA);
         recipe.setIngredient('B', Material.BLACK_CONCRETE);

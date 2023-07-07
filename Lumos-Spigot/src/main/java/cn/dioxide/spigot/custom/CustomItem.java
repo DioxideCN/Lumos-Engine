@@ -17,6 +17,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -32,6 +34,7 @@ public class CustomItem {
 
     private ItemStack item;
     private ItemMeta meta;
+    private final ArrayList<String> loreList = new ArrayList<>();
 
     private CustomItem(Material material) {
         this.item = new ItemStack(material);
@@ -51,10 +54,8 @@ public class CustomItem {
     }
 
     public CustomItem lore(String... lore) {
-        this.meta.setLore(
-                Arrays.stream(lore)
-                        .map(ColorUtils::replace)
-                        .collect(Collectors.toList()));
+        // Lore使用存储式延迟设置策略
+        loreList.addAll(List.of(lore));
         return this;
     }
 
@@ -78,32 +79,45 @@ public class CustomItem {
         return this;
     }
 
-    @Deprecated
-    @Unsafe(proposer = "Dioxide_CN")
-    public CustomItem glow() {
-        // glow光效在spigot-api中并没有显示的方法 所以只能使用NMS来合并NBT
-        net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
-        // 预备合并的CompoundTag
-        CompoundTag merge = new CompoundTag() {{
-            putShort("id", (short) -1);
-            putShort("lvl", (short) 0);
-        }}, ench = new CompoundTag() {{
-            put("ench", merge);
-        }};
-        // Compound是一个可能为空的值对象 这里使用Optional来处理NPE
-        nmsItem.setTag(
-                Optional.ofNullable(nmsItem.getTag())
-                        .orElse(new CompoundTag())
-                        // 原生tag与enchTag进行合并并代回nmsItem
-                        .merge(ench));
-        // 将NMS物品转换回CraftBukkit可识别物品
-        this.item = CraftItemStack.asBukkitCopy(nmsItem);
-        return this;
-    }
-
     public ItemStack build() {
+        this.meta.setLore(
+                loreList.stream()
+                        .map(ColorUtils::replace)
+                        .map(CustomItem::resolveExpression)
+                        .collect(Collectors.toList()));
         this.item.setItemMeta(this.meta);
         return this.item;
+    }
+
+    /**
+     * 解析式函数，使用正则取出表达式 %r() 中的范围并代回替换
+     */
+    private static String resolveExpression(String input) {
+        StringBuilder output = new StringBuilder();
+        Random random = new Random();
+        // 定义正则表达式
+        String patternString = "%r\\((\\d+)-(\\d+)\\)";
+        Pattern pattern = Pattern.compile(patternString);
+        Matcher matcher = pattern.matcher(input);
+        int lastIndex = 0;
+        // 循环匹配替换
+        while (matcher.find()) {
+            // 添加非表达式部分
+            output.append(input, lastIndex, matcher.start());
+            // 获取表达式中的数字
+            double minValue = Double.parseDouble(matcher.group(1));
+            double maxValue = Double.parseDouble(matcher.group(2));
+            // 随机数复用正态分布x~N(μ,σ^2)
+            double mean = (maxValue + minValue) / 3.0;  // 均值 (max + min) / 3 中轴线偏向 min
+            double stdDev = (maxValue - minValue) / 5.0; // 标准差 (max + min) / 5 分布偏陡峭
+            double randomValue = (int) (random.nextGaussian() * stdDev + mean);
+            randomValue = Math.max(minValue, Math.min(maxValue, randomValue)); // 限制在[minValue, maxValue]范围内
+            output.append(String.format("%.1f", randomValue)); // 保留一位小数
+            lastIndex = matcher.end();
+        }
+        // 添加剩余部分
+        output.append(input.substring(lastIndex));
+        return output.toString();
     }
 
 }

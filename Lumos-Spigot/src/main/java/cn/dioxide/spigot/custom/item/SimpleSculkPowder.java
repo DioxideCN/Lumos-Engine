@@ -17,15 +17,14 @@ import org.bukkit.inventory.ShapedRecipe;
 @Custom("simple_sculk_powder")
 public class SimpleSculkPowder {
 
-    private static final ItemStack item = CustomItem.with(Material.GRAY_DYE)
+    private static final CustomItem item = CustomItem.with(Material.GRAY_DYE)
             .name("&f简易幽匿粉尘")
-            .lore("&7&o合成物 锻造物")
-            .build();
+            .lore("&7&o合成物 锻造物");
 
     @Recipe
     public static ShapedRecipe registerCustomRecipe() {
         NamespacedKey key = new NamespacedKey(LumosStarter.INSTANCE, "simple_sculk_powder");
-        ShapedRecipe recipe = new ShapedRecipe(key, item);
+        ShapedRecipe recipe = new ShapedRecipe(key, item.build());
         recipe.shape("ABA", " C ", " D ");
         recipe.setIngredient('A', Material.SCULK_SENSOR);
         recipe.setIngredient('B', Material.SCULK_SHRIEKER);
