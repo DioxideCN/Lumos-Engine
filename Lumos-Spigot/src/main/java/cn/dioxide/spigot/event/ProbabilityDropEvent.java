@@ -88,7 +88,7 @@ public class ProbabilityDropEvent implements Listener {
                     return;
                 }
                 // handle other drops
-                HorrifyWardenFeature.onWardenDeath(event);
+                // HorrifyWardenFeature.onWardenDeath(event);
             }
         } else {
             // clear if no player damage
@@ -96,6 +96,7 @@ public class ProbabilityDropEvent implements Listener {
         }
     }
 
+    // 分段概率密度函数
     private boolean shouldDropItem(double damageRatio) {
         if (damageRatio < THRESHOLD) {
             return false;

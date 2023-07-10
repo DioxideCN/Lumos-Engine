@@ -108,7 +108,7 @@ public class CustomItem {
             double minValue = Double.parseDouble(matcher.group(1));
             double maxValue = Double.parseDouble(matcher.group(2));
             // 随机数复用正态分布x~N(μ,σ^2)
-            double mean = (maxValue + minValue) / 3.0;  // 均值 (max + min) / 3 中轴线偏向 min
+            double mean = (maxValue + minValue) / 3.0;  // 均值 (max + min) / 3 中轴线偏向最小值
             double stdDev = (maxValue - minValue) / 5.0; // 标准差 (max + min) / 5 分布偏陡峭
             double randomValue = (int) (random.nextGaussian() * stdDev + mean);
             randomValue = Math.max(minValue, Math.min(maxValue, randomValue)); // 限制在[minValue, maxValue]范围内

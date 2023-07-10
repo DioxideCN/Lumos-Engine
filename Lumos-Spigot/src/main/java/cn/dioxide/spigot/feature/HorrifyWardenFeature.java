@@ -35,7 +35,7 @@ public class HorrifyWardenFeature implements Listener {
     private static final Map<UUID, Long> wardenCheckStartTime = new HashMap<>();
     private static final Map<UUID, Boolean> isWardenConsistentlyTrapped = new HashMap<>();
 
-    @EventHandler
+    // @EventHandler
     public void onCreatureSpawn(CreatureSpawnEvent event) {
         if (event.getEntityType() == EntityType.WARDEN) {
             Warden warden = (Warden) event.getEntity();
@@ -136,7 +136,7 @@ public class HorrifyWardenFeature implements Listener {
 
     // ***************** 定时任务
 
-    @LoopThis
+    // @LoopThis
     public static void wardenScheduler() {
         for (World world : Bukkit.getWorlds()) {
             for (Entity entity : world.getEntities()) {
@@ -421,8 +421,8 @@ public class HorrifyWardenFeature implements Listener {
                             isWardenConsistentlyTrapped.put(wardenId, false);
                         }
                         ticks++;
-                        // 3秒后执行传送并移除缓存
-                        if (ticks >= 60) {
+                        // 6秒后执行传送并移除缓存
+                        if (ticks >= 120) {
                             if (isWardenConsistentlyTrapped.getOrDefault(wardenId, false)) {
                                 teleportWardenNearPlayer(warden, (Player) entityAngryAt);
                             }
@@ -459,7 +459,9 @@ public class HorrifyWardenFeature implements Listener {
      */
     private static void teleportWardenNearPlayer(Warden warden, Player player) {
         Location playerLocation = player.getLocation();
-
+        if (player.getHealth() < 8) {
+            return;
+        }
         Random random = new Random();
         for (int attempts = 0; attempts < 10; attempts++) {
             double angle = random.nextDouble() * 2 * Math.PI;
@@ -666,7 +668,7 @@ public class HorrifyWardenFeature implements Listener {
         }
     }
 
-    @LoopThis(period = 60L)
+    // @LoopThis(period = 60L)
     public static void cleanUpMaps() {
         // List of Maps to clean up
         doCleanUpMaps(wardenCheckStartTime);
