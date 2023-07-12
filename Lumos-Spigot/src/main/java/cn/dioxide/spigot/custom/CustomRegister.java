@@ -1,13 +1,14 @@
 package cn.dioxide.spigot.custom;
 
 import cn.dioxide.common.annotation.Custom;
-import cn.dioxide.common.annotation.LoopThis;
 import cn.dioxide.common.annotation.Recipe;
+import cn.dioxide.common.extension.Pair;
 import cn.dioxide.common.extension.ReflectFactory;
+import cn.dioxide.common.infra.CustomType;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -15,6 +16,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 注册中心，所有CustomItem将被初始化后的容器自动注册到itemMap中
@@ -26,7 +29,8 @@ import java.util.List;
  */
 public class CustomRegister {
 
-    private static final HashMap<String, CustomItem> itemMap = new HashMap<>(200);
+    private static final HashMap<String, ItemStack> itemMap = new HashMap<>(200);
+    private static final HashMap<String, Pair<String, Class<?>>> skillMap = new HashMap<>(200);
 
     public static void init() {
         // 使用之前的BeanHolder对@Custom自动注入到注册表
@@ -35,10 +39,15 @@ public class CustomRegister {
             Custom custom = clazz.getAnnotation(Custom.class);
             if (custom != null) {
                 try { // 强制反射
+                    CustomType type = custom.type();
                     String key = custom.value();
+                    if (type == CustomType.SKILL_TYPE) {
+                        skillMap.put(key, Pair.of(custom.skillName(), clazz));
+                        continue;
+                    }
                     Field itemField = clazz.getDeclaredField("item");
                     itemField.setAccessible(true);
-                    CustomItem item = (CustomItem) itemField.get(null);
+                    ItemStack item = (ItemStack) itemField.get(null);
                     // 将物品自动注册到HashMap中
                     itemMap.put(key, item);
                     // 尝试注册Recipe解析@Recipe注解
@@ -68,7 +77,11 @@ public class CustomRegister {
     }
 
     public static ItemStack get(String key) {
-        return itemMap.get(key).build();
+        return itemMap.get(key);
+    }
+
+    public static Map<String, Pair<String, Class<?>>> get() {
+        return skillMap;
     }
 
     public static List<String> getKeySet() {

@@ -32,9 +32,9 @@ import java.util.stream.Collectors;
  */
 public class CustomItem {
 
-    private ItemStack item;
-    private ItemMeta meta;
-    private final ArrayList<String> loreList = new ArrayList<>();
+    ItemStack item;
+    ItemMeta meta;
+    final ArrayList<String> loreList = new ArrayList<>();
 
     private CustomItem(Material material) {
         this.item = new ItemStack(material);
@@ -49,8 +49,21 @@ public class CustomItem {
         }
     }
 
+    private CustomItem(ItemStack itemStack) {
+        this.item = itemStack;
+        // 获取或创建物品的元数据
+        this.meta = itemStack.getItemMeta();
+        if (this.meta == null) {
+            throw new NullPointerException("No item meta provided");
+        }
+    }
+
     public static CustomItem with(Material material) {
         return new CustomItem(material);
+    }
+
+    public static CustomItem with(ItemStack itemStack) {
+        return new CustomItem(itemStack);
     }
 
     public CustomItem lore(String... lore) {
@@ -79,12 +92,55 @@ public class CustomItem {
         return this;
     }
 
+    public CustomItem attach(String skillLore) {
+        if (this.item.getItemMeta() == null) throw new RuntimeException("Item doesn't have any meta");
+        List<String> oldItemLore = this.item.getItemMeta().getLore();
+        // 标记是否找到并替换了技能
+        int foundIndex = -2;
+        if (oldItemLore != null) {
+            // 从skillLore中提取技能名称
+            String skillName = skillLore.split(" ")[1];
+            // 遍历loreList如果已经存在此次合成不修改词条
+            for (int i = 0; i < oldItemLore.size(); i++) {
+                if (oldItemLore.get(i).contains(ColorUtils.replace(skillName))) {
+                    foundIndex = -1;
+                    break;
+                }
+                if (oldItemLore.get(i).contains(ColorUtils.replace("§8[")) &&
+                        oldItemLore.get(i).contains("§e") &&
+                        oldItemLore.get(i).contains("§7§o") &&
+                        oldItemLore.get(i).contains("§8]")) {
+                    foundIndex = i;
+                    break;
+                }
+            }
+        }
+        // >= 0 表示有可替换的选项
+        if (foundIndex >= 0) {
+            oldItemLore.set(foundIndex, ColorUtils.replace(skillLore));
+            this.item.getItemMeta().setLore(oldItemLore);
+        }
+        // -2 表示oldItemLore为null或未进行过任何合成
+        else if (foundIndex == -2) {
+            loreList.add(0, ColorUtils.replace(skillLore));
+        }
+        return this;
+    }
+
     public ItemStack build() {
-        this.meta.setLore(
-                loreList.stream()
-                        .map(ColorUtils::replace)
-                        .map(CustomItem::resolveExpression)
-                        .collect(Collectors.toList()));
+        List<String> processedLoreList = loreList.stream()
+                .map(ColorUtils::replace)
+                .map(CustomItem::resolveExpression)
+                .distinct()
+                .collect(Collectors.toList());
+        List<String> oldLore = this.meta.getLore();
+        if (oldLore != null) {
+            oldLore.addAll(processedLoreList);
+            this.meta.setLore(oldLore.stream().distinct().toList());
+        } else {
+            this.meta.setLore(processedLoreList);
+        }
+
         this.item.setItemMeta(this.meta);
         return this.item;
     }
@@ -92,7 +148,7 @@ public class CustomItem {
     /**
      * 解析式函数，使用正则取出表达式 %r() 中的范围并代回替换
      */
-    private static String resolveExpression(String input) {
+    protected static String resolveExpression(String input) {
         StringBuilder output = new StringBuilder();
         Random random = new Random();
         // 定义正则表达式

@@ -2,6 +2,7 @@ package cn.dioxide.spigot.feature;
 
 import cn.dioxide.common.annotation.Event;
 import cn.dioxide.common.annotation.LoopThis;
+import cn.dioxide.common.util.ChunkUtils;
 import cn.dioxide.spigot.LumosStarter;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -41,7 +42,7 @@ public class HorrifyWardenFeature implements Listener {
             Warden warden = (Warden) event.getEntity();
             Location spawnLocation = warden.getLocation();
             // 21x21x21内的尖啸体设置为不可用
-            List<Block> blocks = getRegionBlocks(spawnLocation, 10, 10, 10);
+            List<Block> blocks = ChunkUtils.getRegionBlocks(spawnLocation, 10, 10, 10);
             for (Block block : blocks) {
                 if (block.getType() == Material.SCULK_SHRIEKER) {
                     if (block.getBlockData() instanceof SculkShrieker sculkShrieker) {
@@ -200,7 +201,7 @@ public class HorrifyWardenFeature implements Listener {
      */
     private static void evaporativeFluid(Warden warden) {
         if(warden.getAngerLevel() == Warden.AngerLevel.ANGRY) {
-            List<Block> blocks = getRegionBlocks(warden.getLocation(), 5, 5, 5);
+            List<Block> blocks = ChunkUtils.getRegionBlocks(warden.getLocation(), 5, 5, 5);
             for (Block block : blocks) {
                 if (block.getType() == Material.WATER ||
                         block.getType() == Material.LAVA) {
@@ -230,7 +231,7 @@ public class HorrifyWardenFeature implements Listener {
         if (warden.getAngerLevel() == Warden.AngerLevel.ANGRY && !wardenAngryTaskIDs.containsKey(warden.getUniqueId())) {
             BukkitScheduler scheduler = Bukkit.getScheduler();
             int taskID = scheduler.scheduleSyncRepeatingTask(LumosStarter.INSTANCE, () -> {
-                List<Block> blocks = getRegionBlocks(warden.getLocation(), 10, 10, 10);
+                List<Block> blocks = ChunkUtils.getRegionBlocks(warden.getLocation(), 10, 10, 10);
                 for (Block block : blocks) {
                     if (block.getType() == Material.OBSIDIAN ||
                             block.getType() == Material.CRYING_OBSIDIAN ||
@@ -531,45 +532,12 @@ public class HorrifyWardenFeature implements Listener {
     }
 
     /**
-     * 从对角loc1到对角loc2对称区域内的所有方块
-     */
-    private static List<Block> getRegionBlocks(Location location, int fx, int fy, int fz) {
-        Location loc1 = location.clone().add(fx, fy, fz);
-        Location loc2 = location.clone().subtract(fx, fy, fz);
-        return getRegionBlocks(loc1, loc2);
-    }
-
-    /**
-     * 从对角loc1到对角loc2区域内的所有方块
-     */
-    private static List<Block> getRegionBlocks(Location loc1, Location loc2) {
-        List<Block> blocks = new ArrayList<>();
-        // 获取坐标xyz
-        int x1 = loc1.getBlockX();
-        int y1 = loc1.getBlockY();
-        int z1 = loc1.getBlockZ();
-        int x2 = loc2.getBlockX();
-        int y2 = loc2.getBlockY();
-        int z2 = loc2.getBlockZ();
-        // 遍历区域坐标
-        for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-            for (int y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
-                for (int z = Math.min(z1, z2); z <= Math.max(z1, z2); z++) {
-                    if (loc1.getWorld() == null) return blocks;
-                    blocks.add(loc1.getWorld().getBlockAt(x, y, z));
-                }
-            }
-        }
-        return blocks;
-    }
-
-    /**
      * 监守者死亡时同时会向21x5x21范围内播撒1-3个幽匿尖啸体
      */
     private static void generateSculkShrieker(Location location) {
         Location loc1 = location.clone().add(10, 2, 10);
         Location loc2 = location.clone().subtract(10, 2, 10);
-        List<Block> blocks = getRegionBlocks(loc1, loc2);
+        List<Block> blocks = ChunkUtils.getRegionBlocks(loc1, loc2);
         World world = location.getWorld();
         if (world == null) {
             return;
@@ -615,7 +583,7 @@ public class HorrifyWardenFeature implements Listener {
      * 死亡后替换方块
      */
     private static void replaceBlocks(Location location) {
-        List<Block> blocks = getRegionBlocks(location, 5, 6, 5);
+        List<Block> blocks = ChunkUtils.getRegionBlocks(location, 5, 6, 5);
         // 遍历方块并替换黑曜石、水、岩浆、含水方块
         for (Block block : blocks) {
             if (block.getType() == Material.OBSIDIAN || block.getType() == Material.CRYING_OBSIDIAN) {

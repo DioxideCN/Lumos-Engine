@@ -1,5 +1,7 @@
 package cn.dioxide.common.annotation;
 
+import cn.dioxide.common.infra.CustomType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -14,4 +16,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Custom {
     String value();
+    CustomType type() default CustomType.ITEM_TYPE;
+    String skillName() default "";
 }
