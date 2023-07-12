@@ -1,7 +1,6 @@
 package cn.dioxide.spigot.custom;
 
 import cn.dioxide.spigot.custom.structure.Altar;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;

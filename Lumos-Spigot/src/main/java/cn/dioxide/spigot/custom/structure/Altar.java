@@ -94,11 +94,9 @@ public class Altar {
     }
 
     public boolean match(ICustomSkillHandler recipe) {
-        boolean result = matchItemStackList(this.getEndGear(), recipe.endGearRecipe())
+        return matchItemStackList(this.getEndGear(), recipe.endGearRecipe())
                 && matchItemStackList(this.getNetherGear(), recipe.netherGearRecipe())
                 && matchItemStackList(this.getSculkGear(), recipe.sculkGearRecipe());
-        if (result) removeAllItem(false);
-        return result;
     }
 
     private boolean matchItemStackList(List<ItemStack> playerItems, List<ItemStack> targetItems) {
@@ -179,6 +177,7 @@ public class Altar {
 
     @Unsafe(proposer = "Dioxide_CN")
     public void setWeapon(ItemStack weapon) {
+        removeAllItem(false);
         List<ItemDisplay> displays = getEntityAbove(this.lodeStone);
         if (displays.isEmpty()) return;
         for (ItemDisplay display : displays) {

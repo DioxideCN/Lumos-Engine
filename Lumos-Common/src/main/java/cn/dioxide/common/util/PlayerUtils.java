@@ -7,6 +7,7 @@ import cn.dioxide.common.infra.EventType;
 import cn.dioxide.common.infra.TrimUpgradeStore;
 import com.google.common.util.concurrent.AtomicDouble;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -28,6 +29,21 @@ import java.util.stream.Collectors;
  * @since 1.0
  */
 public class PlayerUtils {
+
+    public static boolean isSword(Material type) {
+        return switch (type) {
+            case WOODEN_SWORD, STONE_SWORD, IRON_SWORD, DIAMOND_SWORD, NETHERITE_SWORD -> true;
+            default -> false;
+        };
+    }
+
+    public static boolean isAxe(Material type) {
+        return switch (type) {
+            case WOODEN_AXE, STONE_AXE, IRON_AXE, DIAMOND_AXE, NETHERITE_AXE -> true;
+            default -> false;
+        };
+    }
+
     /**
      * 获取在线所有人的玩家名
      * @return 在线所有人的玩家名集合

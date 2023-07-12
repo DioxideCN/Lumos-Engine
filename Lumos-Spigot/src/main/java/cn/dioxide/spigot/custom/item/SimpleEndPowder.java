@@ -27,7 +27,7 @@ public class SimpleEndPowder {
         NamespacedKey key = new NamespacedKey(LumosStarter.INSTANCE, "simple_end_powder");
         ShapedRecipe recipe = new ShapedRecipe(key, item);
         recipe.shape(" A ", "BBC", " D ");
-        recipe.setIngredient('A', Material.ELYTRA);
+        recipe.setIngredient('A', Material.DRAGON_BREATH);
         recipe.setIngredient('B', Material.BLACK_CONCRETE);
         recipe.setIngredient('C', Material.DRAGON_HEAD);
         recipe.setIngredient('D', Material.END_CRYSTAL);

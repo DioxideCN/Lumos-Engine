@@ -2,7 +2,6 @@ package cn.dioxide.spigot.custom;
 
 import cn.dioxide.common.annotation.Event;
 import cn.dioxide.common.util.ChunkUtils;
-import cn.dioxide.spigot.custom.skill.DefaultSkillHelper;
 import cn.dioxide.spigot.custom.structure.Altar;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -206,7 +205,7 @@ public class EnableCustomAltar implements Listener {
                     for (String s : lore) {
                         if (s.contains("§8[") && s.contains("§e") && s.contains("§7§o") && s.contains("§8]")) {
                             Bukkit.getServer().getPluginManager().callEvent(
-                                    new TriggerSkillEvent(player, item, DefaultSkillHelper.getSkill(s)));
+                                    new TriggerSkillEvent(player, item, s, event.getDamage()));
                             break;
                         }
                     }
