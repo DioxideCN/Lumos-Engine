@@ -1,8 +1,8 @@
 # 开发指南
-开发需要遵守MIT开源协议，如果是发布版本请遵守《阿里巴巴Java开发手册 嵩山版》进行开发。
+开发需要遵守MIT开源协议，如果是发布版本请遵守《阿里巴巴Java开发手册 嵩山版》进行开发。Lumos Engine历时半个月的开发已经形成了非常完备的自动化构建容器和单例容器，拥有非常强大的自动注入和探测能力，得益于这些框架的出现任何一位开发者都能轻松上手Lumos Engine的开发。
 
 ## 构建方法
-即便目前还没有使用到NMS但我依然选择使用BuildTools来进行构建，开发者在克隆仓库后需要使用`./gradlew buildSpigot`来进行项目初始化的构建，这个过程会比较漫长（有条件的情况下请配置http proxy）。
+开发者在克隆仓库后需要使用`./gradlew buildSpigot`来进行项目初始化的构建，这个过程会比较漫长（有条件的情况下请配置http proxy），打包使用`./gradlew lumos`进行打包。
 
 ## 开发者须知
 如你所见到的一样，项目被划分为`Lumos-Spigot`、`Lumos-Common`、`Lumos-Web`他们分别负责Spigot插件启动模块、Common内建核心模块、Web网络接口应用模块。
@@ -13,6 +13,7 @@
 2. 调用Lumos-Common下的`Config.init`方法初始化全局配置变量
 3. 调用Lumos-Common下的`BeanHolder.init`方法初始化Bean容器
 4. 调用Lumos-Common下的`LocalWebEngine.init`方法初始化Web容器
+5. 调用Lumos-Spigot下的`CustomRegister.init`方法初始化自定义物品和技能容器
 
 这里我只选择几个重要的初始化方法来详细介绍。
 
