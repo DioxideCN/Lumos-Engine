@@ -17,12 +17,19 @@ libraries:
 commands:
   lumos:
     description: 'Get lumos engine total help'
+    permission: 'lumos.admin.use'
     usage: "/lumos <module> <...args>"
   custom:
     description: 'Get custom help'
+    permission: 'lumos.custom.use'
     usage: "/custom <cmd> <...args>"
   display:
     description: 'Get display help'
     permission-message: "You don't have permission to use this command."
     permission: 'lumos.display.use'
     usage: "/display <cmd> <...args>"
+  snake:
+    description: 'Get snake help'
+    permission-message: "You don't have permission to use this command."
+    permission: 'lumos.snake.use'
+    usage: "/snake <args>"

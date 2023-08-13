@@ -6,8 +6,14 @@ import cn.dioxide.common.infra.EffectTarget;
 import cn.dioxide.common.infra.EventType;
 import cn.dioxide.common.infra.TrimUpgradeStore;
 import com.google.common.util.concurrent.AtomicDouble;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.biome.Biome;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -16,6 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.trim.ArmorTrim;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,16 +37,34 @@ import java.util.stream.Collectors;
  */
 public class PlayerUtils {
 
+    @Nullable
+    public static ServerLevel getNMSWorld(Player player) {
+        Location location = player.getLocation();
+        CraftWorld craftWorld = (CraftWorld) location.getWorld();
+        if (craftWorld == null) return null;
+        return craftWorld.getHandle();
+    }
+
+    @Nullable
+    public static Biome getBiome(Player player) {
+        Location location = player.getLocation();
+        ServerLevel nmsWorld = getNMSWorld(player);
+        if (nmsWorld == null) return null;
+        BlockPos blockPos = new BlockPos((int)location.getX(), (int)location.getY(), (int)location.getZ());
+        Holder<Biome> biome = nmsWorld.getBiome(blockPos);
+        return biome.value();
+    }
+
     public static boolean isSword(Material type) {
         return switch (type) {
-            case WOODEN_SWORD, STONE_SWORD, IRON_SWORD, DIAMOND_SWORD, NETHERITE_SWORD -> true;
+            case WOODEN_SWORD, STONE_SWORD, IRON_SWORD, GOLDEN_SWORD, DIAMOND_SWORD, NETHERITE_SWORD -> true;
             default -> false;
         };
     }
 
     public static boolean isAxe(Material type) {
         return switch (type) {
-            case WOODEN_AXE, STONE_AXE, IRON_AXE, DIAMOND_AXE, NETHERITE_AXE -> true;
+            case WOODEN_AXE, STONE_AXE, IRON_AXE, GOLDEN_AXE, DIAMOND_AXE, NETHERITE_AXE -> true;
             default -> false;
         };
     }

@@ -6,24 +6,20 @@ import cn.dioxide.common.infra.CustomType;
 import cn.dioxide.common.util.CalcUtils;
 import cn.dioxide.common.util.PlayerUtils;
 import cn.dioxide.spigot.custom.*;
-import cn.dioxide.spigot.custom.structure.Altar;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
+import cn.dioxide.spigot.custom.structure.*;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,35 +32,33 @@ import java.util.regex.Pattern;
 @Custom(value = "healing_skill", type = CustomType.SKILL_TYPE, skillName = "治愈光环")
 public class HealingSkill implements Listener, ICustomSkillHandler {
 
-    // 治愈半径 治愈概率 治愈量
-    private static final String entry = "&8[ &e治愈光环 &7&o+%r(3-8) +%r(15-85)% +%r(5-50)% &8]";
+    @Override
+    public @NotNull List<Factor> getFactor() {
+        return new ArrayList<>(){{
+            add(Factor.with(Quality.STRONG, 0.12F, 0.65F, World.Environment.NORMAL));
+        }};
+    }
 
     @Override
-    @EventHandler
-    public void onAltarRecipeCall(AltarRecipeEvent e) {
-        Altar altar = e.getAltar();
-        if (altar.match(this)) {
-            Optional.ofNullable(altar.getWeapon()).ifPresent(weapon -> {
-                Material type = weapon.getType();
-                // 只能附加到剑和斧上
-                if (!PlayerUtils.isSword(type) && !PlayerUtils.isAxe(type)) return;
-                altar.setWeapon(
-                        CustomItem.with(weapon)
-                                .attach(entry) // 附着
-                                .enchant(Enchantment.DURABILITY, 1, true)
-                                .build());
-                DefaultAnimation.spawnBallParticle(altar.getLoc().add(0.5, 1.5, 0.5));
-                assert altar.getLoc().getWorld() != null;
-                altar.getLoc().getWorld() // 播放音效
-                        .playSound(altar.getLoc(),
-                                Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0F, 1.0F);
-            });
-        }
+    public @NotNull String getEntry() {
+        // 治愈半径 治愈概率 治愈量
+        return "&8[ &e治愈光环 &7&o+%r(3-8) +%r(15-85)% +%r(5-50)% &8]";
+    }
+
+    @Override
+    public void attachRecipe(Player player, Altar altar) {
+        DefaultSkillHelper.attachSkillToWeapon(this, altar);
+    }
+
+    // 只能附加到剑和斧上
+    @Override
+    public boolean satisfyCondition(Material material) {
+        return PlayerUtils.isSword(material) || PlayerUtils.isAxe(material);
     }
 
     @Override
     @EventHandler
-    public void onSkillTrigger(TriggerSkillEvent e) {
+    public void onSkillTrigger(TriggerSkillAttackEvent e) {
         if (e.getPair().left().equals("治愈光环")) {
             if (!CalcUtils.checkProbability(getChance(e.getLore()))) {
                 return;
@@ -96,47 +90,38 @@ public class HealingSkill implements Listener, ICustomSkillHandler {
     }
 
     @Override
-    public @NotNull List<ItemStack> endGearRecipe() {
-        return new ArrayList<>();
+    public @Nullable ItemStack endStoneOne() {
+        return null;
     }
 
     @Override
-    public @NotNull List<ItemStack> netherGearRecipe() {
-        return new ArrayList<>() {{
-            add(CustomRegister.get("simple_wither_powder"));
-        }};
+    public @Nullable ItemStack netherWartOne() {
+        return null;
     }
 
     @Override
-    public @NotNull List<ItemStack> sculkGearRecipe() {
-        return new ArrayList<>();
+    public @Nullable ItemStack sculkCatalystOne() {
+        return null;
     }
 
-    private static final Pattern pattern = Pattern.compile("\\d+"); // 匹配一个或多个数字
+    @Override
+    public @Nullable ItemStack amethystOne() {
+        return CustomRegister.get("amethyst_sherd");
+    }
 
     // 恢复半径
-    private static double getDistance(String skillLore) {
-        return getInteger(skillLore.split(" ")[2]);
+    private double getDistance(String skillLore) {
+        return DefaultSkillHelper.getNumberFromLore(skillLore.split(" ")[2]);
     }
 
     // 恢复概率
-    private static double getChance(String skillLore) {
-        return getInteger(skillLore.split(" ")[3]);
+    private double getChance(String skillLore) {
+        return DefaultSkillHelper.getNumberFromLore(skillLore.split(" ")[3]);
     }
 
     // 恢复百分比
-    private static double getPercentage(String skillLore) {
-        return getInteger(skillLore.split(" ")[4]);
-    }
-
-    private static double getInteger(String s) {
-        Pattern pattern = Pattern.compile("\\+([0-9]*\\.?[0-9]+)"); // 正则表达式，匹配以+开始的小数
-        Matcher matcher = pattern.matcher(s);
-        if (matcher.find()) {
-            return Double.parseDouble(matcher.group(1));
-        } else {
-            throw new IllegalArgumentException("No valid number found in the input string.");
-        }
+    private double getPercentage(String skillLore) {
+        return DefaultSkillHelper.getNumberFromLore(skillLore.split(" ")[4]);
     }
 
 }

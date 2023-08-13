@@ -14,21 +14,22 @@ import org.bukkit.inventory.ShapedRecipe;
  * @date 2023/7/6
  * @since 1.0
  */
-@Custom("simple_wither_powder")
-public class SimpleWitherPowder {
+@Custom("city_sherd")
+public class CitySherd {
 
-    private static final ItemStack item = CustomItem.with(Material.GRAY_DYE)
-            .name("&f简易凋灵粉尘")
-            .lore("&7&o合成物 锻造物")
+    private static final ItemStack item = CustomItem.with(Material.BLADE_POTTERY_SHERD)
+            .name("&7[&6尖塔残垣&7]")
+            .lore("&7&o残垣碎片可以驱动强力附魔台")
+            .lore("&7&o需要 &8&o紫颂花 紫铂块 &7&o合成")
             .build();
 
     @Recipe
     public static ShapedRecipe registerCustomRecipe() {
-        NamespacedKey key = new NamespacedKey(LumosStarter.INSTANCE, "simple_wither_powder");
+        NamespacedKey key = new NamespacedKey(LumosStarter.INSTANCE, "city_sherd");
         ShapedRecipe recipe = new ShapedRecipe(key, item);
-        recipe.shape("AAA", "BBB", " B ");
-        recipe.setIngredient('A', Material.WITHER_SKELETON_SKULL);
-        recipe.setIngredient('B', Material.SOUL_SAND);
+        recipe.shape("A","B");
+        recipe.setIngredient('A', Material.CHORUS_FLOWER);
+        recipe.setIngredient('B', Material.PURPUR_BLOCK);
         return recipe;
     }
 

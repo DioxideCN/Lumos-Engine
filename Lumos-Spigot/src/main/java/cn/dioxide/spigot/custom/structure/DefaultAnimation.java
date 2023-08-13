@@ -1,12 +1,16 @@
-package cn.dioxide.spigot.custom.skill;
+package cn.dioxide.spigot.custom.structure;
 
 import cn.dioxide.common.annotation.Unsafe;
+import cn.dioxide.spigot.LumosStarter;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Random;
 
 /**
  * @author Dioxide.CN
@@ -18,24 +22,18 @@ public class DefaultAnimation {
     private static final double PI = Math.PI;
 
     public static void spawnBallParticle(Location location) {
-        // 创建烟花实体
-        if (location.getWorld() == null) return;
-        // 创建烟花效果（颜色，形状等）
-        FireworkEffect effect1 = FireworkEffect.builder()
-                .withColor(Color.RED, Color.WHITE, Color.ORANGE, Color.BLUE)
-                .with(FireworkEffect.Type.BALL)
-                .flicker(false)
-                .build();
-        FireworkEffect effect2 = FireworkEffect.builder()
-                .withColor(Color.PURPLE, Color.OLIVE, Color.AQUA, Color.YELLOW)
-                .with(FireworkEffect.Type.BALL)
-                .flicker(false)
-                .build();
-        Firework firework = (Firework) location.getWorld().spawnEntity(location, EntityType.FIREWORK);
-        FireworkMeta meta = firework.getFireworkMeta();
-        meta.addEffects(effect1, effect2);
-        firework.setFireworkMeta(meta);
-        firework.detonate();
+        World world = location.getWorld();
+        if (world == null) return;
+        Random rand = new Random();
+        int randomNum = rand.nextInt((180 - 80) + 1) + 80;
+        world.spawnParticle(Particle.ENCHANTMENT_TABLE, location.add(0.5, 2.5, 0.5), randomNum, 0.125, 0.125, 0.125, 3);
+        Bukkit.getScheduler().runTaskLater(
+                JavaPlugin.getProvidingPlugin(LumosStarter.class),
+                () -> {
+                    world.playSound(location, Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0F, 1.0F);
+                    world.spawnParticle(Particle.END_ROD, location.add(0, -1.3, 0), 65, 0.125, 0.025, 0.125, 0.2);
+                },
+                32L);
     }
 
     /**

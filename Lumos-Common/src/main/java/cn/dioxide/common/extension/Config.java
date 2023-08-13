@@ -26,7 +26,7 @@ public class Config {
     // The static instance of the config.
     private static Config config;
     // The list of config filenames.
-    private static final String[] filenames = { "config.yml", "trim_upgrade.yml", "whitelist.yml", "application.yml" };
+    private static final String[] filenames = { "config.yml", "trim_upgrade.yml", "whitelist.yml", "application.yml", "parkour.yml" };
     // The list of files.
     private static File[] files;
     // The list of configs.
@@ -37,6 +37,8 @@ public class Config {
     public final Feature feature;
     public final Display display;
     public final Robot robot;
+    public final Map<String, SnakeConfig> snakeConfigs;
+    public final JavaPlugin plugin;
 
     public static void init(JavaPlugin plugin, boolean showLog) {
         try {
@@ -61,6 +63,7 @@ public class Config {
     }
 
     private Config(JavaPlugin plugin, boolean showLog) {
+        this.plugin = plugin;
         for (String filename : filenames) {
             if (!new File(plugin.getDataFolder(), filename).exists()) {
                 plugin.saveResource(filename, false);
@@ -154,6 +157,20 @@ public class Config {
                 }
             }
             Format.use().plugin().finder("Book Display Consume", this.display.book.consume);
+        }
+
+        // 贪吃蛇配置
+        this.snakeConfigs = new HashMap<>(10);
+        @SuppressWarnings("unchecked")
+        List<Map<?, ?>> parkourList = (List<Map<?, ?>>) configs[4].getList("parkour");
+        if (parkourList != null) {
+            for (Map<?, ?> rawParkour : parkourList) {
+                if (rawParkour != null) {
+                    ConfigurationSection section = configs[4].createSection("temp", rawParkour);
+                    SnakeConfig snakeConfig = SnakeConfig.fromConfigurationSection(section);
+                    snakeConfigs.put(snakeConfig.getName(), snakeConfig);
+                }
+            }
         }
 
         // 到这里读完所有config.yml的配置
@@ -273,6 +290,8 @@ public class Config {
         FEATURE_KEY_MAP.put("feature.enable-whitelist", config.feature.enableWhitelist);
     }
 
+
+
     public static class Robot {
         public List<Long> owner;
         public List<Long> group;
@@ -319,7 +338,6 @@ public class Config {
     public static Config get() {
         return config;
     }
-
 
     public boolean set(int fileIndex, String configKey, Object value) {
         if (fileIndex > filenames.length - 1) {

@@ -630,9 +630,6 @@ public class HorrifyWardenFeature implements Listener {
         if (lootTable != null) {
             chest.setLootTable(lootTable);
             chest.update();
-        } else {
-            // 处理LootTable找不到的情况
-            System.out.println("LootTable not found");
         }
     }
 

@@ -2,13 +2,17 @@ package cn.dioxide.spigot.custom.structure;
 
 import cn.dioxide.common.annotation.Unsafe;
 import cn.dioxide.common.util.MatrixUtils;
-import cn.dioxide.spigot.custom.EnableCustomAltar;
-import cn.dioxide.spigot.custom.ICustomSkillHandler;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -16,6 +20,7 @@ import org.joml.Matrix4f;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author Dioxide.CN
@@ -23,6 +28,24 @@ import java.util.List;
  * @since 1.0
  */
 public class Altar {
+
+    private @NotNull final Block coreBlock;
+    private @Nullable Chest awaitChest;
+
+    public float getLoyalty() {
+        Chest chest = getRandomValidChest();
+        if (chest == null) return -1F;
+        awaitChest = chest;
+        float totalValue = 0.0F;
+        int totalCount = 0;
+        for (ItemStack item : chest.getInventory().getContents()) {
+            if (item != null && item.getType() != Material.AIR) {
+                totalValue += LoyaltySet.CHART.getOrDefault(item.getType(), 0.0F) * item.getAmount();
+                totalCount += item.getAmount();
+            }
+        }
+        return totalCount == 0 ? 0F : totalValue / totalCount;
+    }
 
     /**
      * 采取优化：
@@ -37,30 +60,16 @@ public class Altar {
     @Nullable
     public static Altar with(Block block) {
         if (block == null) return null;
-        Block nearestLodeStone = block.getType() == Material.LODESTONE ? block : findNearestLodeStone(block);
-        if (nearestLodeStone == null) {
-            return null;
+        Block nearestCore = block.getType() == Material.LODESTONE ? block : findNearestCenterCore(block);
+        if (nearestCore == null) return null;
+        World world = nearestCore.getWorld();
+        int x = nearestCore.getX(), y = nearestCore.getY(), z = nearestCore.getZ();
+        // 检查核心方块附近的方块
+        for (EnableCustomAltar.CoreBlock offset : EnableCustomAltar.offsetBlocks) {
+            // 检查是否符合周围方块的需求
+            if (offset.getBlock(world, x, y, z) == null) return null;
         }
-        World world = nearestLodeStone.getWorld();
-        int x = nearestLodeStone.getX(), y = nearestLodeStone.getY(), z = nearestLodeStone.getZ();
-        // 判断磁石附近的方块
-        for (int i = 0; i < EnableCustomAltar.offsets.length; i++) {
-            Block currentBlock = world.getBlockAt(x + EnableCustomAltar.offsets[i][0], y, z + EnableCustomAltar.offsets[i][1]);
-            if (i < 4) { // [0,4)
-                if (currentBlock.getType() != Material.END_STONE) {
-                    return null;
-                }
-            } else if (i < 12) { // [4,12)
-                if (currentBlock.getType() != Material.CRYING_OBSIDIAN) {
-                    return null;
-                }
-            } else { // [12,24]
-                if (currentBlock.getType() != Material.SCULK) {
-                    return null;
-                }
-            }
-        }
-        return new Altar(nearestLodeStone);
+        return new Altar(nearestCore);
     }
 
     // 祭坛被破坏
@@ -68,44 +77,47 @@ public class Altar {
         removeAllItem();
     }
 
+    /**
+     * 寻找距离最近的核心方块
+     */
     @Nullable
-    private static Block findNearestLodeStone(Block block) {
+    private static Block findNearestCenterCore(Block block) {
         Material type = block.getType();
         World world = block.getWorld();
-        int x = block.getX(), y = block.getY(), z = block.getZ(), start = 0, end = 0;
-        // 优化判断逻辑减少循环次数
-        if (type == Material.END_STONE) {
-            end = start + 4;
-        } else if (type == Material.CRYING_OBSIDIAN) {
-            start = 4;
-            end = start + 8;
-        } else if (type == Material.SCULK) {
-            start = 12;
-            end = start + 12;
-        }
-        // 检查是否为磁石附近的位置
-        for (; start < end; start++) {
-            Block possibleLodeStone = world.getBlockAt(x + EnableCustomAltar.offsets[start][0], y, z + EnableCustomAltar.offsets[start][1]);
-            if (possibleLodeStone.getType() == Material.LODESTONE) {
-                return possibleLodeStone;
+        int x = block.getX(), y = block.getY(), z = block.getZ();
+        EnableCustomAltar.CoreBlock offset = EnableCustomAltar.CoreBlock.isOne(type);
+        if (offset != null) {
+            if (offset.isThis(type)) {
+                // 底下必须放置矿物块
+                if (offset.getBelow(block) == null) return null;
+                Block possibleCore = world.getBlockAt(
+                        x - offset.getOffsetX(), y - offset.getOffsetY(), z - offset.getOffsetZ());
+                if (possibleCore.getType() == EnableCustomAltar.offsetBlocks[4].getBlockType()) {
+                    // 是Core类型的方块
+                    return possibleCore;
+                }
             }
         }
         return null;
     }
 
+    // 比对合成表
     public boolean match(ICustomSkillHandler recipe) {
-        return matchItemStackList(this.getEndGear(), recipe.endGearRecipe())
-                && matchItemStackList(this.getNetherGear(), recipe.netherGearRecipe())
-                && matchItemStackList(this.getSculkGear(), recipe.sculkGearRecipe());
+        return matchItemStackList(this.getEndGear(), recipe.endStoneOne())
+                && matchItemStackList(this.getNetherGear(), recipe.netherWartOne())
+                && matchItemStackList(this.getSculkGear(), recipe.sculkCatalystOne())
+                && matchItemStackList(this.getAmethystGear(), recipe.amethystOne());
     }
 
-    private boolean matchItemStackList(List<ItemStack> playerItems, List<ItemStack> targetItems) {
-        if (playerItems.size() != targetItems.size()) {
-            return false;
+    private boolean matchItemStackList(List<ItemStack> gearItems, ItemStack targetItem) {
+        if (targetItem == null) return gearItems.isEmpty(); // 该位置不需要物品
+        if (gearItems.isEmpty()) return false;
+        for (ItemStack gearItem : gearItems) {
+            if (!isItemEqual(gearItem, targetItem)) {
+                return false;
+            }
         }
-        return playerItems.stream()
-                .allMatch(playerItem -> targetItems.stream()
-                        .anyMatch(targetItem -> isItemEqual(playerItem, targetItem)));
+        return true;
     }
 
     private boolean isItemEqual(ItemStack item1, ItemStack item2) {
@@ -128,21 +140,19 @@ public class Altar {
         return new HashSet<>(lore1).containsAll(lore2);
     }
 
-    private @NotNull final Block lodeStone;
-
     private Altar(Block block) {
         if (block.getType() != Material.LODESTONE) {
             throw new RuntimeException("Illegal lode stone");
         }
-        this.lodeStone = block;
+        this.coreBlock = block;
     }
 
     public Location getLoc() {
-        return this.lodeStone.getLocation();
+        return this.coreBlock.getLocation();
     }
 
     // 将武器放置到Altar的激活座上
-    public boolean putWeapon(ItemStack item, Block block, double angle) {
+    public boolean putWeapon(ItemStack item, Block block, double angle, float yaw) {
         if (block == null || item == null || item.getType() == Material.AIR) return false;
         if (!getEntityAbove(block).isEmpty()) {
             removeItem(block);
@@ -152,9 +162,9 @@ public class Altar {
         ItemDisplay weaponDisplay = block.getWorld().spawn(spawnLocation, ItemDisplay.class);
         Matrix4f matrix;
         if (item.getType() == Material.TRIDENT) {
-            matrix = MatrixUtils.getMatrix(angle, 0, 0, 1, 1, 1, -0.5, 0.7, -0.5);
+            matrix = MatrixUtils.getMatrix(angle, yaw, 0, 1, 1, 1, -0.5, 0.7, -0.5);
         } else {
-            matrix = MatrixUtils.getMatrix(0, 0, angle, 1, 1, 1);
+            matrix = MatrixUtils.getMatrix(0, yaw, angle, 1, 1, 1);
         }
         weaponDisplay.setTransformationMatrix(matrix);
         weaponDisplay.addScoreboardTag("altar.item");
@@ -164,7 +174,7 @@ public class Altar {
 
     @Nullable
     public ItemStack getWeapon() {
-        List<ItemDisplay> displays = getEntityAbove(this.lodeStone);
+        List<ItemDisplay> displays = getEntityAbove(this.coreBlock);
         if (displays.isEmpty()) return null;
         for (ItemDisplay display : displays) {
             ItemStack weapon = display.getItemStack();
@@ -178,22 +188,41 @@ public class Altar {
     @Unsafe(proposer = "Dioxide_CN")
     public void setWeapon(ItemStack weapon) {
         removeAllItem(false);
-        List<ItemDisplay> displays = getEntityAbove(this.lodeStone);
-        if (displays.isEmpty()) return;
-        for (ItemDisplay display : displays) {
-            display.setItemStack(weapon);
+        if (!removeItem(this.coreBlock, false)) return;
+        if (awaitChest != null) {
+            awaitChest.getInventory().clear();
         }
+        // 在coreBlock位置y+1.2的地方生成一个item实体
+        Location spawnLocation = this.coreBlock.getLocation().add(0.5, 1.2, 0.5);
+        Item itemEntity = this.coreBlock.getWorld().spawn(spawnLocation, Item.class, item -> {
+            item.setItemStack(weapon);
+            item.setGlowing(true);
+            item.setGravity(false);
+            item.addScoreboardTag("stellarity.boss_drop");
+            item.setVelocity(new Vector(0, 0, 0));
+        });
+        if (Bukkit.getScoreboardManager() == null) return;
+        Scoreboard mainBoard = Bukkit.getScoreboardManager().getMainScoreboard();
+        Team team = mainBoard.getTeam("stellarity.purple_glow");
+        if (team == null) return;
+        team.addEntry(itemEntity.getUniqueId().toString());
     }
 
     // 将物品放置到Altar的基座上
     public boolean putItem(ItemStack item, Block block) {
         if (block == null || item == null || item.getType() == Material.AIR) return false;
-        if (!getEntityAbove(block).isEmpty()) {
+        // 获取核心方块的位置
+        EnableCustomAltar.CoreBlock offsetBlock = EnableCustomAltar.CoreBlock.isOne(block.getType());
+        if (offsetBlock == null) return false;
+        if (!getEntityAbove(block).isEmpty()) { // 如果已经放置了那就替换
             removeItem(block);
         }
+        // 替换方块
+        offsetBlock.doReplace(block);
+        // 扣除物品
         ItemStack cloneItem = item.clone();
         cloneItem.setAmount(1);
-        Location spawnLocation = block.getLocation().add(0.5, 1.05, 0.5);
+        Location spawnLocation = block.getLocation().add(0.5, 0.1, 0.5);
         // 创建一个itemDisplay
         ItemDisplay itemDisplay = block.getWorld().spawn(spawnLocation, ItemDisplay.class);
         itemDisplay.addScoreboardTag("altar.item");
@@ -208,28 +237,34 @@ public class Altar {
     }
 
     // 从Altar基座上移除物品 移除物品不需要考虑是否是祭坛
-    public static void removeItem(Block block) {
-        removeItem(block, true);
+    public static boolean removeItem(Block block) {
+        return removeItem(block, true);
     }
 
-    public static void removeItem(Block block, boolean shouldDrop) {
-        if (block == null) return;
+    public static boolean removeItem(Block block, boolean shouldDrop) {
+        boolean result = false;
+        if (block == null) return result;
         List<ItemDisplay> displays = getEntityAbove(block);
-        if (displays.isEmpty()) return;
+        if (displays.isEmpty()) return result;
+        EnableCustomAltar.CoreBlock offsetBlock = EnableCustomAltar.CoreBlock.isOne(block.getType());
+        if (offsetBlock == null) return result;
         for (ItemDisplay display : displays) {
             ItemStack weapon = display.getItemStack();
             if (block.getType() == Material.LODESTONE && weapon != null) {
                 display.remove();
                 World world = display.getWorld();
-                world.dropItemNaturally(display.getLocation(), weapon);
-                world // 播放音效
-                        .playSound(display.getLocation(),
-                                Sound.ENTITY_ITEM_FRAME_REMOVE_ITEM, 1.0F, 1.0F);
+                if (shouldDrop) {
+                    world.dropItemNaturally(display.getLocation(), weapon);
+                }
+                world.playSound(display.getLocation(),
+                        Sound.BLOCK_BEACON_DEACTIVATE, 1.0F, 1.0F);
+                result = true;
                 break;
             }
             for (Entity passenger : display.getPassengers()) {
                 if (passenger instanceof Item item) {
                     item.remove();
+                    result = true;
                     World world = item.getWorld();
                     if (shouldDrop) {
                         world.dropItemNaturally(item.getLocation(), item.getItemStack());
@@ -243,6 +278,8 @@ public class Altar {
             }
             display.remove();
         }
+        offsetBlock.doRollback(block);
+        return result;
     }
 
     // 移除所有祭坛上的物品
@@ -250,41 +287,51 @@ public class Altar {
         removeAllItem(true);
     }
 
+    /**
+     * 移除所有物品
+     * @param shouldDrop 是否掉落
+     */
     private void removeAllItem(boolean shouldDrop) {
-        World world = this.lodeStone.getWorld();
-        int x = lodeStone.getX(), y = lodeStone.getY(), z = lodeStone.getZ();
-        for (int i = 0; i < EnableCustomAltar.offsets.length; i++) {
-            Block currentBlock = world.getBlockAt(x + EnableCustomAltar.offsets[i][0], y, z + EnableCustomAltar.offsets[i][1]);
-            removeItem(currentBlock, shouldDrop);
+        World world = this.coreBlock.getWorld();
+        int x = coreBlock.getX(), y = coreBlock.getY(), z = coreBlock.getZ();
+        for (EnableCustomAltar.CoreBlock offset : EnableCustomAltar.offsetBlocks) {
+            if (offset.getBlockType() == Material.LODESTONE) continue;
+            Block block = offset.getBlock(world, x, y, z);
+            removeItem(block, shouldDrop);
         }
         if (shouldDrop) {
-            removeItem(this.lodeStone);
+            removeItem(this.coreBlock);
         }
     }
 
-    // 末影轮盘
+    // 末地石基座
     private @NotNull List<ItemStack> getEndGear() {
-        int[][] offsets = {{2, 0}, {-2, 0}, {0, 2}, {0, -2}};
-        return getGear(Material.END_STONE, offsets);
+        return getGear(Material.YELLOW_STAINED_GLASS);
     }
 
-    // 下届轮盘
+    // 下界疣基座
     private @NotNull List<ItemStack> getNetherGear() {
-        int[][] offsets = {{-4, 0}, {4, 0}, {0, -4}, {0, 4}, {3, 3}, {3, -3}, {-3, 3}, {-3, -3}};
-        return getGear(Material.CRYING_OBSIDIAN, offsets);
+        return getGear(Material.RED_STAINED_GLASS);
     }
 
-    // 潜声轮盘
+    // 幽匿基座
     private @NotNull List<ItemStack> getSculkGear() {
-        int[][] offsets = {{-6, 0}, {6, 0}, {0, -6}, {0, 6}, {3, 5}, {3, -5}, {-3, 5}, {-3, -5}, {5, 3}, {5, -3}, {-5, 3}, {-5, -3}};
-        return getGear(Material.SCULK, offsets);
+        return getGear(Material.CYAN_STAINED_GLASS);
     }
 
-    private @NotNull List<ItemStack> getGear(Material blockType, int[][] offsets) {
+    // 紫水晶基座
+    private @NotNull List<ItemStack> getAmethystGear() {
+        return getGear(Material.PURPLE_STAINED_GLASS);
+    }
+
+    private @NotNull List<ItemStack> getGear(Material blockType) {
         ArrayList<ItemStack> result = new ArrayList<>(1);
-        for (int[] offset : offsets) {
-            Block block = lodeStone.getWorld().getBlockAt(lodeStone.getX() + offset[0], lodeStone.getY(), lodeStone.getZ() + offset[1]);
-            if (block.getType() == blockType) {
+        World world = coreBlock.getWorld();
+        int x = coreBlock.getX(), y = coreBlock.getY(), z = coreBlock.getZ();
+        for (EnableCustomAltar.CoreBlock offset : EnableCustomAltar.offsetBlocks) {
+            if (offset.isThis(blockType)) {
+                Block block = offset.getBlock(world, x, y, z);
+                if (block == null) return result;
                 for (ItemDisplay display : getEntityAbove(block)) {
                     if (!display.getScoreboardTags().contains("altar.item")) {
                         continue;
@@ -314,10 +361,42 @@ public class Altar {
 
     @Override
     public String toString() {
-        return "{world: " + this.lodeStone.getWorld() +
-                ", x: " + this.lodeStone.getX() +
-                ", y: " + this.lodeStone.getY() +
-                ", z: " + this.lodeStone.getZ() + "}";
+        return "{world: " + this.coreBlock.getWorld() +
+                ", x: " + this.coreBlock.getX() +
+                ", y: " + this.coreBlock.getY() +
+                ", z: " + this.coreBlock.getZ() + "}";
+    }
+
+    @Nullable
+    public Chest getRandomValidChest() {
+        ArrayList<Block> validChests = new ArrayList<>();
+        // 定义四个检查的位置
+        Block[] potentialChests = new Block[]{
+                this.coreBlock.getRelative(2, 0, 0), // x+2
+                this.coreBlock.getRelative(-2, 0, 0), // x-2
+                this.coreBlock.getRelative(0, 0, 2), // z+2
+                this.coreBlock.getRelative(0, 0, -2) // z-2
+        };
+        for (Block block : potentialChests) {
+            // 检查方块是否为箱子
+            if (block.getType() == Material.CHEST) {
+                BlockState state = block.getState();
+                if (state instanceof Chest chest) {
+                    // 检查是否为单个小箱子且包含物品
+                    if (!(chest.getInventory().getHolder() instanceof DoubleChest) &&
+                            chest.getInventory().getSize() == 27 && !chest.getInventory().isEmpty()) {
+                        validChests.add(block);
+                    }
+                }
+            }
+        }
+        // 随机选择一个箱子
+        if (!validChests.isEmpty()) {
+            int randomIndex = new Random().nextInt(validChests.size());
+            Block randomBlock = validChests.get(randomIndex);
+            return (Chest) randomBlock.getState();
+        }
+        return null;
     }
 
 }

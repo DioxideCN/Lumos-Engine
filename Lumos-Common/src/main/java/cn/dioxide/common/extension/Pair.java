@@ -26,6 +26,12 @@ public class Pair<L, R> {
         return rightValue;
     }
 
+    public Pair<L,R> use(L newLeft, R newRight) {
+        this.leftValue = newLeft;
+        this.rightValue = newRight;
+        return this;
+    }
+
     /**
      * 创建空的Pair
      *

@@ -14,23 +14,22 @@ import org.bukkit.inventory.ShapedRecipe;
  * @date 2023/7/6
  * @since 1.0
  */
-@Custom("simple_end_powder")
-public class SimpleEndPowder {
+@Custom("amethyst_sherd")
+public class AmethystSherd {
 
-    private static final ItemStack item = CustomItem.with(Material.GRAY_DYE)
-            .name("&f简易末影粉尘")
-            .lore("&7&o合成物 锻造物")
+    private static final ItemStack item = CustomItem.with(Material.PRIZE_POTTERY_SHERD)
+            .name("&7[&6水晶残垣&7]")
+            .lore("&7&o残垣碎片可以驱动强力附魔台")
+            .lore("&7&o需要 &8&o紫水晶簇 紫水晶块 &7&o合成")
             .build();
 
     @Recipe
     public static ShapedRecipe registerCustomRecipe() {
-        NamespacedKey key = new NamespacedKey(LumosStarter.INSTANCE, "simple_end_powder");
+        NamespacedKey key = new NamespacedKey(LumosStarter.INSTANCE, "amethyst_sherd");
         ShapedRecipe recipe = new ShapedRecipe(key, item);
-        recipe.shape(" A ", "BBC", " D ");
-        recipe.setIngredient('A', Material.DRAGON_BREATH);
-        recipe.setIngredient('B', Material.BLACK_CONCRETE);
-        recipe.setIngredient('C', Material.DRAGON_HEAD);
-        recipe.setIngredient('D', Material.END_CRYSTAL);
+        recipe.shape("A","B");
+        recipe.setIngredient('A', Material.AMETHYST_CLUSTER);
+        recipe.setIngredient('B', Material.SOUL_SAND);
         return recipe;
     }
 

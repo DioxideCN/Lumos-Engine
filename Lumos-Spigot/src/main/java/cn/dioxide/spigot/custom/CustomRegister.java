@@ -5,19 +5,15 @@ import cn.dioxide.common.annotation.Recipe;
 import cn.dioxide.common.extension.Pair;
 import cn.dioxide.common.extension.ReflectFactory;
 import cn.dioxide.common.infra.CustomType;
+import cn.dioxide.spigot.custom.structure.ICustomSkillHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.lang.reflect.*;
+import java.util.*;
 
 /**
  * 注册中心，所有CustomItem将被初始化后的容器自动注册到itemMap中
@@ -30,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CustomRegister {
 
     private static final HashMap<String, ItemStack> itemMap = new HashMap<>(200);
-    private static final HashMap<String, Pair<String, Class<?>>> skillMap = new HashMap<>(200);
+    private static final HashMap<String, Pair<String, ICustomSkillHandler>> skillMap = new HashMap<>(200);
 
     public static void init() {
         // 使用之前的BeanHolder对@Custom自动注入到注册表
@@ -42,9 +38,20 @@ public class CustomRegister {
                     CustomType type = custom.type();
                     String key = custom.value();
                     if (type == CustomType.SKILL_TYPE) {
-                        skillMap.put(key, Pair.of(custom.skillName(), clazz));
+                        // 是否是ICustomSkillHandler接口
+                        Class<?>[] interfaces = clazz.getInterfaces();
+                        if (Arrays.asList(interfaces).contains(ICustomSkillHandler.class)) {
+                            // 如果clazz实际上是Class<ICustomSkillHandler>的一个实例
+                            if (ICustomSkillHandler.class.isAssignableFrom(clazz)) {
+                                // 在这里，我们安全地将clazz转换为Class<ICustomSkillHandler>
+                                @SuppressWarnings("unchecked") // 我们已经检查过类型，所以这是安全的
+                                ICustomSkillHandler instance = getiCustomSkillHandler((Class<ICustomSkillHandler>) clazz);
+                                skillMap.put(key, Pair.of(custom.skillName(), instance));
+                            }
+                        }
                         continue;
                     }
+
                     Field itemField = clazz.getDeclaredField("item");
                     itemField.setAccessible(true);
                     ItemStack item = (ItemStack) itemField.get(null);
@@ -69,18 +76,29 @@ public class CustomRegister {
                             }
                         }
                     }
-                } catch (NoSuchFieldException | IllegalAccessException e) {
+                } catch (NoSuchFieldException |
+                         IllegalAccessException |
+                         NoSuchMethodException |
+                         InvocationTargetException |
+                         InstantiationException e) {
                     e.printStackTrace(); // 隐式抛出异常
                 }
             }
         }
     }
 
-    public static ItemStack get(String key) {
+    @NotNull
+    private static ICustomSkillHandler getiCustomSkillHandler(Class<ICustomSkillHandler> clazz) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        Constructor<ICustomSkillHandler> constructor = clazz.getConstructor();
+        constructor.setAccessible(true);
+        return constructor.newInstance();
+    }
+
+    public @Nullable static ItemStack get(String key) {
         return itemMap.get(key);
     }
 
-    public static Map<String, Pair<String, Class<?>>> get() {
+    public static Map<String, Pair<String, ICustomSkillHandler>> get() {
         return skillMap;
     }
 

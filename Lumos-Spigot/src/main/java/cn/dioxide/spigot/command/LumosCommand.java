@@ -51,15 +51,6 @@ public class LumosCommand implements TabExecutor {
                 return BindingQQCommand.bindingQQ(player, args[1]);
             }
         }
-        if (args.length == 1) {
-            if ("reload".equals(args[0])) {
-                PluginManager pluginManager = Bukkit.getPluginManager();
-                pluginManager.disablePlugin(LumosStarter.INSTANCE);
-                pluginManager.enablePlugin(LumosStarter.INSTANCE);
-                Format.use().plugin().info("&aPlugin has been reloaded.");
-                return true;
-            }
-        }
         // lumos whitelist add|remove|enable|disable
         if ((args.length == 2 || args.length == 3) && "whitelist".equals(args[0])) {
             return WhiteListHelper.handleWhiteListCommand(sender, args);

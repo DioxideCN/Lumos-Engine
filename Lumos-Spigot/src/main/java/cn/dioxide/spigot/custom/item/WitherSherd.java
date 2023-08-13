@@ -14,23 +14,22 @@ import org.bukkit.inventory.ShapedRecipe;
  * @date 2023/7/6
  * @since 1.0
  */
-@Custom("simple_sculk_powder")
-public class SimpleSculkPowder {
+@Custom("wither_sherd")
+public class WitherSherd {
 
-    private static final ItemStack item = CustomItem.with(Material.GRAY_DYE)
-            .name("&f简易幽匿粉尘")
-            .lore("&7&o合成物 锻造物")
+    private static final ItemStack item = CustomItem.with(Material.SKULL_POTTERY_SHERD)
+            .name("&7[&6凋零残垣&7]")
+            .lore("&7&o残垣碎片可以驱动强力附魔台")
+            .lore("&7&o需要 &8&o凋灵头颅 灵魂沙 &7&o合成")
             .build();
 
     @Recipe
     public static ShapedRecipe registerCustomRecipe() {
-        NamespacedKey key = new NamespacedKey(LumosStarter.INSTANCE, "simple_sculk_powder");
+        NamespacedKey key = new NamespacedKey(LumosStarter.INSTANCE, "wither_sherd");
         ShapedRecipe recipe = new ShapedRecipe(key, item);
-        recipe.shape("ABA", " C ", " D ");
-        recipe.setIngredient('A', Material.SCULK_SENSOR);
-        recipe.setIngredient('B', Material.SCULK_SHRIEKER);
-        recipe.setIngredient('C', Material.SCULK_CATALYST);
-        recipe.setIngredient('D', Material.SCULK);
+        recipe.shape("A","B");
+        recipe.setIngredient('A', Material.WITHER_SKELETON_SKULL);
+        recipe.setIngredient('B', Material.SOUL_SAND);
         return recipe;
     }
 

@@ -1,14 +1,12 @@
 package cn.dioxide.spigot.custom;
 
-import cn.dioxide.common.annotation.Unsafe;
+import cn.dioxide.common.extension.Pair;
 import cn.dioxide.common.util.ColorUtils;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import cn.dioxide.spigot.custom.structure.ICustomSkillHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -17,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -93,36 +92,34 @@ public class CustomItem {
     }
 
     public CustomItem attach(String skillLore) {
-        if (this.item.getItemMeta() == null) throw new RuntimeException("Item doesn't have any meta");
+        if (this.item.getItemMeta() == null) {
+            throw new RuntimeException("Item doesn't have any meta");
+        }
+        Map<String, Pair<String, ICustomSkillHandler>> map = CustomRegister.get();
+        // 寻找匹配的技能
+        Optional<Pair<String, ICustomSkillHandler>> addingSkillOpt = map.values()
+                .stream()
+                .filter(pair -> skillLore.contains(pair.left()))
+                .findFirst();
+        if (addingSkillOpt.isEmpty()) {
+            return this;
+        }
+        Pair<String, ICustomSkillHandler> addingSkill = addingSkillOpt.get();
         List<String> oldItemLore = this.item.getItemMeta().getLore();
-        // 标记是否找到并替换了技能
-        int foundIndex = -2;
-        if (oldItemLore != null) {
-            // 从skillLore中提取技能名称
-            String skillName = skillLore.split(" ")[1];
-            // 遍历loreList如果已经存在此次合成不修改词条
-            for (int i = 0; i < oldItemLore.size(); i++) {
-                if (oldItemLore.get(i).contains(ColorUtils.replace(skillName))) {
-                    foundIndex = -1;
-                    break;
-                }
-                if (oldItemLore.get(i).contains(ColorUtils.replace("§8[")) &&
-                        oldItemLore.get(i).contains("§e") &&
-                        oldItemLore.get(i).contains("§7§o") &&
-                        oldItemLore.get(i).contains("§8]")) {
-                    foundIndex = i;
-                    break;
-                }
+        if (oldItemLore == null) oldItemLore = new ArrayList<>();
+        // 计算匹配的技能词条数量
+        long matchedCount = oldItemLore.stream()
+                .filter(lore -> map.values().stream().anyMatch(pair -> lore.contains(pair.left())))
+                .count();
+        int indexToUpdate = -1;
+        for (int i = 0; i < oldItemLore.size(); i++) {
+            if (oldItemLore.get(i).contains(addingSkill.left())) {
+                indexToUpdate = i;
+                break;
             }
         }
-        // >= 0 表示有可替换的选项
-        if (foundIndex >= 0) {
-            oldItemLore.set(foundIndex, ColorUtils.replace(skillLore));
-            this.item.getItemMeta().setLore(oldItemLore);
-        }
-        // -2 表示oldItemLore为null或未进行过任何合成
-        else if (foundIndex == -2) {
-            loreList.add(0, ColorUtils.replace(skillLore));
+        if (indexToUpdate != -1 || matchedCount < 3) {
+            this.loreList.add(0, ColorUtils.replace(skillLore));
         }
         return this;
     }
@@ -136,7 +133,7 @@ public class CustomItem {
         List<String> oldLore = this.meta.getLore();
         if (oldLore != null) {
             oldLore.addAll(processedLoreList);
-            this.meta.setLore(oldLore.stream().distinct().toList());
+            this.meta.setLore(removeDuplicatesBasedOnSecondElement(oldLore));
         } else {
             this.meta.setLore(processedLoreList);
         }
@@ -174,6 +171,23 @@ public class CustomItem {
         // 添加剩余部分
         output.append(input.substring(lastIndex));
         return output.toString();
+    }
+
+    private List<String> removeDuplicatesBasedOnSecondElement(List<String> oldLore) {
+        // 使用LinkedHashMap来维护插入顺序
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+
+        for (String str : oldLore) {
+            String[] parts = str.split(" ");
+            if (parts.length >= 2) {
+                map.put(parts[1], str);
+            } else {
+                map.put(str, str); // 对于没有空格的情况，直接使用整个字符串作为键
+            }
+        }
+
+        // LinkedHashMap会按照插入顺序返回values，所以最后一个插入的值（即最新的值）会被保留
+        return new ArrayList<>(map.values());
     }
 
 }
